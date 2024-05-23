@@ -2,8 +2,8 @@ import {Request, Response} from "express";
 import {PrismaClient} from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import {registerValidationRules} from "../validations/authValidation";
-import {validateRegistration} from "../middleware/validate";
+import {loginValidationRules, registerValidationRules} from "../validations/authValidation";
+import {handleValidationErrors} from "../middleware/validate";
 
 
 const prisma = new PrismaClient();
@@ -27,7 +27,7 @@ const setCookie = (res: Response, token: string) => {
 
 export const register = [
     registerValidationRules,
-    validateRegistration,
+    handleValidationErrors,
     async (req: Request, res: Response) => {
 
 
@@ -65,6 +65,45 @@ export const register = [
 
         } catch (e) {
             console.log("ERROR - REGISTER @POST --> " + e);
+            res.status(500).json({errorMessage: "Internal Server Error"});
+        }
+    }
+]
+
+export const login = [
+    loginValidationRules,
+    handleValidationErrors,
+
+    async (req: Request, res: Response) => {
+        try {
+
+            const {email, password} = req.body;
+
+            const userExists = await prisma.user.findFirst({
+                where: {email}
+            });
+
+            if (!userExists) {
+                return res.status(400).json({errorMessage: "Invalid credentials"});
+            }
+
+            // check whether the password matches
+            const passwordMatch = await bcrypt.compare(password, userExists.password);
+
+            if (!passwordMatch) {
+                return res.status(400).json({errorMessage: "Invalid credentials"});
+            }
+
+            // generate the token
+            const token = generateToken(userExists.id);
+
+            // set the token as a cookie
+            setCookie(res, token);
+
+            return res.status(200).json({userId: userExists.id});
+
+        } catch (e) {
+            console.log("ERROR - LOGIN @POST --> " + e);
             res.status(500).json({errorMessage: "Internal Server Error"});
         }
     }
