@@ -2,6 +2,8 @@ import {Request, Response} from "express";
 import {PrismaClient} from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import {registerValidationRules} from "../validations/authValidation";
+import {validateRegistration} from "../middleware/validate";
 
 
 const prisma = new PrismaClient();
@@ -23,41 +25,47 @@ const setCookie = (res: Response, token: string) => {
 };
 
 
-export const register = async (req: Request, res: Response) => {
-    try {
+export const register = [
+    registerValidationRules,
+    validateRegistration,
+    async (req: Request, res: Response) => {
 
-        const {email, password, firstName, lastName} = req.body;
 
-        // check whether the user already exists
-        const existingUser = await prisma.user.findFirst({
-            where: {email}
-        })
+        try {
 
-        if (existingUser) {
-            return res.status(400).json({errorMessage: "Email already exists. Please sign-in instead"});
-        }
+            const {email, password, firstName, lastName} = req.body;
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+            // check whether the user already exists
+            const existingUser = await prisma.user.findFirst({
+                where: {email}
+            })
 
-        const user = await prisma.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-                firstName,
-                lastName
+            if (existingUser) {
+                return res.status(400).json({errorMessage: "Email already exists. Please sign-in instead"});
             }
-        });
 
-        // generate the token
-        const token = generateToken(user.id);
+            const hashedPassword = await bcrypt.hash(password, 10);
 
-        // after generating the JWT token, it is being set as a cookie in the response using the res.cookie method provided by Express.
-        setCookie(res, token);
+            const user = await prisma.user.create({
+                data: {
+                    email,
+                    password: hashedPassword,
+                    firstName,
+                    lastName
+                }
+            });
 
-        return res.status(201).json({successMessage: "User created successfully"});
+            // generate the token
+            const token = generateToken(user.id);
 
-    } catch (e) {
-        console.log("ERROR - REGISTER @POST --> " + e);
-        res.status(500).json({errorMessage: "Internal Server Error"});
+            // after generating the JWT token, it is being set as a cookie in the response using the res.cookie method provided by Express.
+            setCookie(res, token);
+
+            return res.status(201).json({successMessage: "User created successfully"});
+
+        } catch (e) {
+            console.log("ERROR - REGISTER @POST --> " + e);
+            res.status(500).json({errorMessage: "Internal Server Error"});
+        }
     }
-};
+]
