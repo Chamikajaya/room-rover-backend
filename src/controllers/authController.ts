@@ -41,7 +41,7 @@ export const register = [
             })
 
             if (existingUser) {
-                return res.status(400).json({errorMessage: "Email already exists. Please sign-in instead"});
+                return res.status(400).json({errorMessage: "Email already exists."});
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -61,7 +61,7 @@ export const register = [
             // after generating the JWT token, it is being set as a cookie in the response using the res.cookie method provided by Express.
             setCookie(res, token);
 
-            return res.status(201).json({successMessage: "User created successfully"});
+            return res.status(201).json({successMessage: "Registered successfully"});
 
         } catch (e) {
             console.log("ERROR - REGISTER @POST --> " + e);

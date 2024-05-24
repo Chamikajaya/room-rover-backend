@@ -8,7 +8,13 @@ import userRouter from "./routes/userRouters";
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(express.urlencoded({ extended: true }));
+
+// server is going to accept request from client url -->
+app.use(cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true
+}));
 
 
 app.get('/', (req, res) => {
