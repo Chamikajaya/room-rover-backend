@@ -10,6 +10,9 @@ declare global {
     }
 }
 
+
+// The validateCookie middleware checks if the request contains a valid JWT token in the cookies.
+
 export const validateCookie = (req: Request, res: Response, next: NextFunction) => {
 
     // check if the token exists
@@ -26,6 +29,7 @@ export const validateCookie = (req: Request, res: Response, next: NextFunction) 
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
 
         // get the userId from the decoded token (this is possible because we added the userId to the token when we generated it 😊)
+        // If the token is valid, the user ID is extracted from the token and attached to the request object.
         req.userId = (decoded as any).userId;
 
         next();

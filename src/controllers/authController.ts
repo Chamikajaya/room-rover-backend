@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {loginValidationRules, registerValidationRules} from "../validations/authValidation";
 import {handleValidationErrors} from "../middleware/validate";
-import {validateCookie} from "../middleware/validateCookie";
+import exp from "node:constants";
 
 
 const prisma = new PrismaClient();
@@ -25,7 +25,8 @@ const setCookie = (res: Response, token: string) => {
     });
 };
 
-export const sendUserIdUponTokenValidation =  (req: Request, res: Response) => {
+// sends the user ID back to the frontend in the response.
+export const sendUserIdUponTokenValidation = (req: Request, res: Response) => {
     return res.status(200).json({userId: req.userId});
 };
 
@@ -79,6 +80,7 @@ export const login = [
     handleValidationErrors,
 
     async (req: Request, res: Response) => {
+
         try {
 
             const {email, password} = req.body;
@@ -112,3 +114,13 @@ export const login = [
         }
     }
 ]
+
+export const logout = async (req: Request, res: Response) => {
+    try {
+        res.clearCookie("token");
+        return res.status(200).json({successMessage: "Logged out successfully"});
+    } catch (e) {
+        console.log("ERROR - LOGOUT @POST --> " + e);
+        res.status(500).json({errorMessage: "Internal Server Error"});
+    }
+};
