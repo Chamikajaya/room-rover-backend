@@ -3,10 +3,12 @@ import cors from 'cors';
 import dotenv from 'dotenv/config';
 import {PrismaClient} from "@prisma/client";
 import userRouter from "./routes/userRouters";
+import cookieParser from "cookie-parser";
 
 
 const app = express();
 
+app.use(cookieParser());  // * so that we can access the cookies in the request object (refer validateCookie.ts)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

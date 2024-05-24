@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {loginValidationRules, registerValidationRules} from "../validations/authValidation";
 import {handleValidationErrors} from "../middleware/validate";
+import {validateCookie} from "../middleware/validateCookie";
 
 
 const prisma = new PrismaClient();
@@ -24,6 +25,9 @@ const setCookie = (res: Response, token: string) => {
     });
 };
 
+export const sendUserIdUponTokenValidation =  (req: Request, res: Response) => {
+    return res.status(200).json({userId: req.userId});
+};
 
 export const register = [
     registerValidationRules,
