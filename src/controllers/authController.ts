@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {loginValidationRules, registerValidationRules} from "../validations/authValidation";
 import {handleValidationErrors} from "../middleware/validate";
-import exp from "node:constants";
 
 
 const prisma = new PrismaClient();

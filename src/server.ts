@@ -1,16 +1,22 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv/config';
-import {PrismaClient} from "@prisma/client";
 import userRouter from "./routes/userRouters";
 import cookieParser from "cookie-parser";
+import {v2 as cloudinary} from 'cloudinary';
+
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_API_KEY,
+    api_secret: process.env.CLOUD_API_SECRET
+});
 
 
 const app = express();
 
 app.use(cookieParser());  // * so that we can access the cookies in the request object (refer validateCookie.ts)
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 
 // server is going to accept request from client url -->
 app.use(cors({
@@ -18,9 +24,9 @@ app.use(cors({
     credentials: true
 }));
 
-
+// ! Delete later once deployed
 app.get('/', (req, res) => {
-    res.json({ message: 'Hello World' });
+    res.json({message: 'Hello World'});
 });
 
 app.use('/api/v1/users', userRouter);
