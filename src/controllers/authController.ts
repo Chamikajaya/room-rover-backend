@@ -34,6 +34,7 @@ export const register = [
     handleValidationErrors,
     async (req: Request, res: Response) => {
 
+        // ! DO BACKEND FORM VALIDATION
 
         try {
 
