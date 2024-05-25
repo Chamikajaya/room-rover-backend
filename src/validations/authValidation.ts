@@ -18,3 +18,4 @@ export const loginValidationRules = [
         .matches(passwordRegex)
         .isLength({min: 8}),
 ];
+

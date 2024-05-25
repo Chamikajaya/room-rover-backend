@@ -4,6 +4,7 @@ import cors from 'cors';
 import userRouter from "./routes/userRouters";
 import cookieParser from "cookie-parser";
 import {v2 as cloudinary} from 'cloudinary';
+import myHotelsRouter from "./routes/myHotelsRouters";
 
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
@@ -24,12 +25,9 @@ app.use(cors({
     credentials: true
 }));
 
-// ! Delete later once deployed
-app.get('/', (req, res) => {
-    res.json({message: 'Hello World'});
-});
 
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/my-hotels', myHotelsRouter);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
