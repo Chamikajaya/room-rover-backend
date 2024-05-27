@@ -4,9 +4,13 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {loginValidationRules, registerValidationRules} from "../validations/authValidation";
 import {handleValidationErrors} from "../middleware/validate";
+import nodemailer from "nodemailer";
+import {v4 as uuidv4} from 'uuid';
+import {sendVerificationEmail} from "../utils/sendVerificationEmail";
 
 
 const prisma = new PrismaClient();
+
 
 // generating the jwt token
 const generateToken = (userId: string) => {
@@ -23,6 +27,7 @@ const setCookie = (res: Response, token: string) => {
         maxAge: 1000 * 60 * 60 * 24,  // 1 day in ms -> After this time, the cookie will expire, and the user will need to authenticate again.
     });
 };
+
 
 // sends the user ID back to the frontend in the response.
 export const sendUserIdUponTokenValidation = (req: Request, res: Response) => {
@@ -60,13 +65,44 @@ export const register = [
                 }
             });
 
+            // check whether a token already exists
+            const emailVerificationTokenExists = await prisma.userVerification.findFirst({
+                where: {userId: user.id as string}
+            });
+
+            // if so remove it from db
+            if (emailVerificationTokenExists) {
+                await prisma.userVerification.delete({
+                    where: {id: emailVerificationTokenExists.id}
+                })
+            }
+
+            // generate email verification token
+            const emailVerificationToken = uuidv4();
+            const emailVerificationTokenExpiresAt = new Date(Date.now() + 60 * 15 * 1000);  // 15 minutes
+
+            await prisma.userVerification.create({
+                data: {
+                    verificationToken: emailVerificationToken,
+                    expiresAt: emailVerificationTokenExpiresAt,
+                    userId: user.id
+                }
+            });
+
+            await sendVerificationEmail(email, emailVerificationToken);
+
             // generate the token
             const token = generateToken(user.id);
 
-            // after generating the JWT token, it is being set as a cookie in the response using the res.cookie method provided by Express.
-            setCookie(res, token);
+            return res.status(201).json({ successMessage: "Registered successfully. Please check your email to verify your account." });
 
-            return res.status(201).json({successMessage: "Registered successfully"});
+
+
+
+            // // after generating the JWT token, it is being set as a cookie in the response using the res.cookie method provided by Express.
+            // setCookie(res, token);
+            //
+            // return res.status(201).json({successMessage: "Registered successfully"});
 
         } catch (e) {
             console.log("ERROR - REGISTER @POST --> " + e);

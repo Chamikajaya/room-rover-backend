@@ -5,6 +5,7 @@ import userRouter from "./routes/userRouters";
 import cookieParser from "cookie-parser";
 import {v2 as cloudinary} from 'cloudinary';
 import myHotelsRouter from "./routes/myHotelsRouters";
+import {transporter} from "./utils/sendVerificationEmail";
 
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
@@ -25,6 +26,14 @@ app.use(cors({
     credentials: true
 }));
 
+
+transporter.verify((err, success) => {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log("Server is ready to take messages");
+    }
+})
 
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/my-hotels', myHotelsRouter);
