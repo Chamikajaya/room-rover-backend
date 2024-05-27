@@ -39,7 +39,6 @@ export const register = [
     handleValidationErrors,
     async (req: Request, res: Response) => {
 
-        // ! DO BACKEND FORM VALIDATION
 
         try {
 
@@ -94,15 +93,17 @@ export const register = [
             // generate the token
             const token = generateToken(user.id);
 
-            return res.status(201).json({ successMessage: "Registered successfully. Please check your email to verify your account." });
+            return res.status(201).json({successMessage: "Registered successfully. Please check your email to verify your account."});
+
+            /*
+           // after generating the JWT token, it is being set as a cookie in the response using the res.cookie method provided by Express.
 
 
+           // setCookie(res, token);
 
+           // return res.status(201).json({successMessage: "Registered successfully"});
+           */
 
-            // // after generating the JWT token, it is being set as a cookie in the response using the res.cookie method provided by Express.
-            // setCookie(res, token);
-            //
-            // return res.status(201).json({successMessage: "Registered successfully"});
 
         } catch (e) {
             console.log("ERROR - REGISTER @POST --> " + e);
@@ -110,6 +111,61 @@ export const register = [
         }
     }
 ]
+
+
+export const verifyEmail = async (req: Request, res: Response) => {
+
+    const {token} = req.body;
+
+    console.log(token)
+
+    if (!token) {
+        console.log("Token not found")
+        return res.status(400).json({errorMessage: "Missing token"});
+    }
+
+    console.log("Token found: " + token);
+
+    try {
+
+
+        // If the token is provided, it tries to find a UserVerification instance in the database that has the same verificationToken as the provided token.
+
+        const emailVerificationToken = await prisma.userVerification.findFirst({
+            where: {verificationToken: token as string}
+        });
+
+        if (!emailVerificationToken || emailVerificationToken.expiresAt < new Date()) {
+            return res.status(400).json({errorMessage: "Invalid or expired token"});
+        }
+
+        await prisma.userVerification.delete({  // because the token has been used and is no longer needed.
+            where: {id: emailVerificationToken.id}
+        });
+
+
+        // setting the emailVerified field to true. This means that the user's email has been verified.
+        const verifiedUser = await prisma.user.update({
+            where: {id: emailVerificationToken.userId},
+            data: {
+                emailVerified: true
+            }
+        });
+
+        // Generate a JWT token and set it as a cookie upon successful email verification.
+        const jwtToken = generateToken(verifiedUser.id);
+        setCookie(res, jwtToken);
+
+        return res.status(200).json({successMessage: "Email verified successfully"});
+
+    } catch (e) {
+        console.log("ERROR - VERIFY EMAIL @GET --> " + e);
+        res.status(500).json({errorMessage: "Internal Server Error"});
+    }
+
+
+};
+
 
 export const login = [
     loginValidationRules,
