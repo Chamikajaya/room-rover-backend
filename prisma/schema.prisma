@@ -33,8 +33,6 @@ model Hotel {
   hotelType     String
   country       String
   city          String
-  numOfAdults   Int
-  numOfChildren Int
   facilities    String[]
   pricePerNight Float
   rating        Float    @default(0.0)
