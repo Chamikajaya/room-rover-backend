@@ -28,14 +28,14 @@ model UserVerification {
 
 model Hotel {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  name          String
+  name          String   @unique
   description   String
-  hotelType     String
+  type          String
   country       String
   city          String
   facilities    String[]
   pricePerNight Float
-  rating        Float    @default(0.0)
+  starRating    Float    @default(0.0)
   imageURLs     String[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

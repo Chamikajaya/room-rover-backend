@@ -1,7 +1,7 @@
 import multer from "multer";
 import {Hotel, PrismaClient} from "@prisma/client";
 import {Request, Response} from "express";
-import {v2 as cloudinary} from "cloudinary";
+import {uploadImages} from "../utils/uploadImagesToCloudinary";
 import {hotelCreationValidationRules} from "../validations/hotelValidation";
 import {handleValidationErrors} from "../middleware/validate";
 
@@ -23,27 +23,30 @@ export const createHotel = [
     hotelCreationValidationRules,
     handleValidationErrors,
     async (req: Request, res: Response) => {
+
+    console.log("Route hit --> POST /api/v1/my-hotels");
         try {
 
             // Get the uploaded images from the request
-            const images = req.files as Express.Multer.File[];
+            const imageFiles = req.files as Express.Multer.File[];
 
             const hotel: Hotel = req.body;
 
-            // Uploading the images to cloudinary
-            const imageUrlsForTheHotel = await Promise.all(images.map(async (image) => {
-                const base64 = Buffer.from(image.buffer).toString("base64");
-                let dataURI = `data:${image.mimetype};base64,${base64}`;
-                const response = await cloudinary.uploader.upload(dataURI);
-                return response.url;
-            }));
+            console.log("Hotel is --> " + JSON.stringify(hotel));
 
+            // Uploading the images to cloudinary
             // if the image upload succeeds, the image URLs are stored in the imageURLs field of the hotel object. ->
-            hotel.imageURLs = imageUrlsForTheHotel;
+            hotel.imageURLs = await uploadImages(imageFiles);
 
             // *  whenever the browser sends a request, it sends the token in the headers. According to the workflow set the token is validated and the user ID is set in the request object. (because we run our validateCookie middleware before this controller function) refer to the myHotelsRouter.ts file.
 
             hotel.userId = req.userId as string;
+
+            hotel.updatedAt = new Date();
+
+            hotel.pricePerNight = Number(hotel.pricePerNight);
+
+            hotel.starRating = Number(hotel.starRating);
 
             // creating the hotel
             const createdHotel = await prisma.hotel.create({

@@ -15,6 +15,8 @@ declare global {
 
 export const validateCookie = (req: Request, res: Response, next: NextFunction) => {
 
+    console.log("Route hit --> validateCookie.ts")
+
     // check if the token exists
     const token = req.cookies.token;
 
@@ -24,6 +26,7 @@ export const validateCookie = (req: Request, res: Response, next: NextFunction) 
     }
 
     try {
+        // console.log("Inside try block")
 
         // verify the token -- This is vital because the token could be tampered with or expired
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string);

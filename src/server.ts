@@ -8,10 +8,13 @@ import myHotelsRouter from "./routes/myHotelsRouters";
 import {transporter} from "./utils/sendVerificationEmail";
 
 cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.CLOUD_API_KEY,
-    api_secret: process.env.CLOUD_API_SECRET
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+console.log("api secret is " + process.env.CLOUDINARY_API_SECRET);
+
 
 
 const app = express();
