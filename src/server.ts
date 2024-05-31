@@ -13,7 +13,6 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-console.log("api secret is " + process.env.CLOUDINARY_API_SECRET);
 
 
 

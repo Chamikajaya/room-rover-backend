@@ -62,3 +62,30 @@ export const createHotel = [
         }
     }
 ]
+
+export const getAllMyHotels = async(req: Request, res: Response) => {
+
+    try {
+
+        const userId = req.userId as string;
+
+        const hotels = await prisma.hotel.findMany({
+            where: {
+                userId: userId
+            }
+        });
+
+        res.status(200).json(hotels);
+
+
+    } catch (e) {
+        console.log("ERROR - GET ALL MY HOTELS @GET --> " + e);
+        res.status(500).json({errorMessage: "Internal Server Error"});
+    }
+
+
+
+
+
+
+};

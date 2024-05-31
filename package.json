@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "backend of my multi restaurants food delivery app",
+  "description": "backend of project Room Rover",
   "main": "./src/server.ts",
   "scripts": {
     "dev": "nodemon src/server.ts",
