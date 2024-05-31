@@ -7,9 +7,10 @@ import {v2 as cloudinary} from 'cloudinary';
 import myHotelsRouter from "./routes/myHotelsRouters";
 import {transporter} from "./utils/sendVerificationEmail";
 import {validateCookie} from "./middleware/validateCookie";
-import { PrismaClient} from "@prisma/client";
+import {PrismaClient} from "@prisma/client";
 import {uploadImages} from "./utils/uploadImagesToCloudinary";
 import {upload} from "./controllers/myHotelController";
+
 ;
 
 const prisma = new PrismaClient();
@@ -53,8 +54,8 @@ app.get("/hello", (req, res) => {
 app.use('/api/v1/my-hotels', myHotelsRouter);
 app.use('/api/v1/users', userRouter);
 
-// ! TODO: Refactor once that bug is fixed --> 👇👇👇👇👇👇👇
 
+// ! TODO: Refactor once that bug is fixed --> 👇👇👇👇👇👇👇
 
 app.get("/api/v1/my-hotels/:hotelId", validateCookie, async (req: Request, res: Response) => {
     console.log("Route hit --> GET /api/v1/my-hotels/:id");
@@ -163,6 +164,41 @@ app.put("/api/v1/my-hotels/:id", validateCookie, upload.array("imageFiles", 5), 
         console.log("ERROR - UPDATE HOTEL @PUT --> " + e);
         res.status(500).json({errorMessage: "Internal Server Error"});
     }
+});
+
+app.delete("/api/v1/my-hotels/:id", validateCookie, async (req: Request, res: Response) => {
+    console.log("Route hit --> DELETE /api/v1/my-hotels/:id");
+
+    try {
+        const id = req.params.id as string;
+        const userId = req.userId as string;
+
+        // Verify that the hotel belongs to the user
+        const hotel = await prisma.hotel.findUnique({
+            where: {
+                id,
+                userId,
+            },
+        });
+
+        if (!hotel) {
+            res.status(404).json({errorMessage: "Hotel not found"});
+            return;
+        }
+
+        // Delete the hotel
+        await prisma.hotel.delete({
+            where: {
+                id,
+            },
+        });
+
+        res.status(200).json({message: "Hotel deleted successfully"});
+    } catch (e) {
+        console.log("ERROR - DELETE HOTEL @DELETE --> " + e);
+        res.status(500).json({errorMessage: "Internal Server Error"});
+    }
+
 });
 
 const PORT = process.env.PORT || 5000;
