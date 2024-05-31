@@ -63,29 +63,64 @@ export const createHotel = [
     }
 ]
 
-export const getAllMyHotels = async(req: Request, res: Response) => {
+// export const getAllMyHotels = async(req: Request, res: Response) => {
+//
+//     console.log("Route hit --> GET /api/v1/my-hotels");
+//
+//     try {
+//
+//         const userId = req.userId as string;
+//
+//         const hotels = await prisma.hotel.findMany({
+//             where: {
+//                 userId: userId
+//             }
+//         });
+//
+//         res.status(200).json(hotels);
+//
+//
+//     } catch (e) {
+//         console.log("ERROR - GET ALL MY HOTELS @GET --> " + e);
+//         res.status(500).json({errorMessage: "Internal Server Error"});
+//     }
+//
+//
+//
+//
+//
+//
+// };
+
+
+export const getHotelById = async(req: Request, res: Response) => {
+
+    console.log("Route hit --> GET /api/v1/my-hotels/:id");
 
     try {
 
-        const userId = req.userId as string;
+        const hotelId = req.params.id;
 
-        const hotels = await prisma.hotel.findMany({
+        const hotel = await prisma.hotel.findUnique({
             where: {
-                userId: userId
+                id: hotelId,
+                userId: req.userId as string  // we need to make sure that the hotel belongs to the user who is requesting it. 😈
+
             }
         });
 
-        res.status(200).json(hotels);
+        if (!hotel) {
+            res.status(404).json({errorMessage: "Hotel not found"});
+            return;
+        }
+
+        res.status(200).json(hotel);
+
 
 
     } catch (e) {
-        console.log("ERROR - GET ALL MY HOTELS @GET --> " + e);
+        console.log("ERROR - GET HOTEL BY ID @GET --> " + e);
         res.status(500).json({errorMessage: "Internal Server Error"});
     }
-
-
-
-
-
 
 };

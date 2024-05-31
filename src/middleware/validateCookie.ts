@@ -26,7 +26,7 @@ export const validateCookie = (req: Request, res: Response, next: NextFunction) 
     }
 
     try {
-        // console.log("Inside try block")
+
 
         // verify the token -- This is vital because the token could be tampered with or expired
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
@@ -34,6 +34,8 @@ export const validateCookie = (req: Request, res: Response, next: NextFunction) 
         // get the userId from the decoded token (this is possible because we added the userId to the token when we generated it 😊)
         // If the token is valid, the user ID is extracted from the token and attached to the request object.
         req.userId = (decoded as any).userId;
+
+
 
         next();
 
