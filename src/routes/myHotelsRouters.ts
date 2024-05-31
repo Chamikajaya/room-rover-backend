@@ -1,7 +1,6 @@
 import express from 'express';
-import {createHotel, updateHotel, upload} from "../controllers/myHotelController";
+import {createHotel, upload} from "../controllers/myHotelController";
 import {validateCookie} from "../middleware/validateCookie";
-
 
 
 const myHotelsRouter = express.Router();
@@ -12,11 +11,10 @@ const myHotelsRouter = express.Router();
 // Finally The createHotel controller function creates a hotel in the database.
 myHotelsRouter.post("/", validateCookie, upload.array("imageFiles", 5), ...createHotel);
 
-myHotelsRouter.put("/:hotelId", validateCookie, upload.array("imageFiles", 5), updateHotel);
+// ! myHotelsRouter.put("/:id", validateCookie, upload.array("imageFiles", 5), updateHotel);
 
 // ! myHotelsRouter.get("/:hotelId", validateCookie, getHotelById);
 //! myHotelsRouter.get("/", validateCookie, getAllMyHotels)
-
 
 
 export default myHotelsRouter;

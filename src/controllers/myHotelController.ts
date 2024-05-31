@@ -124,44 +124,58 @@ export const createHotel = [
 // };
 
 
-export const updateHotel = async (req: Request, res: Response) => {
-
-    console.log("Route hit --> PUT /api/v1/my-hotels/:id");
-
-    try {
-
-        const hotel: Hotel = req.body;
-        const id = req.params.hotelId;
-        const userId = req.userId as string;
-        hotel.updatedAt = new Date();
-
-        const updatedHotelFromDb = await prisma.hotel.update({
-            where: {
-                id,
-                userId,
-            },
-            data: hotel,
-        });
-
-        if (!updatedHotelFromDb) {
-            res.status(404).json({errorMessage: "Hotel not found"});
-            return;
-        }
-
-        // Dealing with images update -->
-        const imageFiles = req.files as Express.Multer.File[];
-        const updatedUrls = await uploadImages(imageFiles);
-        const alreadyUploadedUrls = updatedHotelFromDb.imageURLs;
-
-        // merging the old and new image URLs + also countering the case when the user decided to delete all existing images and upload new ones.
-        updatedHotelFromDb.imageURLs = [...(alreadyUploadedUrls || []), ...updatedUrls];
-
-        res.status(200).json(updatedHotelFromDb);
-
-
-    } catch (e) {
-        console.log("ERROR - UPDATE HOTEL @PUT --> " + e);
-        res.status(500).json({errorMessage: "Internal Server Error"});
-    }
-
-}
+// export const updateHotel = async (req: Request, res: Response) => {
+//     console.log("Route hit --> PUT /api/v1/my-hotels/:id");
+//
+//
+//     try {
+//         const id = req.params.id as string;
+//         const userId = req.userId as string;
+//         const {hotelId, imageUrls, ...hotelData} = req.body;
+//
+//         // Parse numeric fields
+//         hotelData.pricePerNight = parseFloat(hotelData.pricePerNight);
+//         hotelData.starRating = parseFloat(hotelData.starRating);
+//
+//         // Update hotel data
+//         const updatedHotelFromDb = await prisma.hotel.update({
+//             where: {
+//                 id,
+//                 userId,
+//             },
+//             data: {
+//                 ...hotelData,
+//                 updatedAt: new Date(),
+//             },
+//         });
+//
+//         if (!updatedHotelFromDb) {
+//             res.status(404).json({errorMessage: "Hotel not found"});
+//             return;
+//         }
+//
+//         // Handle image updates
+//         const imageFiles = req.files as Express.Multer.File[];
+//         const updatedUrls = await uploadImages(imageFiles);
+//         const alreadyUploadedUrls = updatedHotelFromDb.imageURLs || [];
+//         const mergedImageUrls = [...alreadyUploadedUrls, ...updatedUrls];
+//
+//         // Update imageURLs in the database
+//         const updatedHotel = await prisma.hotel.update({
+//             where: {
+//                 id,
+//                 userId,
+//             },
+//             data: {
+//                 imageURLs: mergedImageUrls,
+//             },
+//         });
+//
+//         res.status(200).json(updatedHotel);
+//
+//     } catch (e) {
+//         console.log("ERROR - UPDATE HOTEL @PUT --> " + e);
+//         res.status(500).json({errorMessage: "Internal Server Error"});
+//     }
+//
+// }
