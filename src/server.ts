@@ -51,6 +51,38 @@ app.use('/api/v1/my-hotels', myHotelsRouter);
 app.use('/api/v1/users', userRouter);
 
 // ! TODO: Refactor once that bug is fixed --> 👇👇👇👇👇👇👇
+
+
+app.use("/api/v1/my-hotels/:hotelId", validateCookie, async(req: Request, res: Response) => {
+    console.log("Route hit --> GET /api/v1/my-hotels/:id");
+
+    try {
+
+        const hotelId = req.params.hotelId;
+
+        const hotel = await prisma.hotel.findUnique({
+            where: {
+                id: hotelId,
+                userId: req.userId as string  // we need to make sure that the hotel belongs to the user who is requesting it. 😈
+
+            }
+        });
+
+        if (!hotel) {
+            res.status(404).json({errorMessage: "Hotel not found"});
+            return;
+        }
+
+        res.status(200).json(hotel);
+
+
+
+    } catch (e) {
+        console.log("ERROR - GET HOTEL BY ID @GET --> " + e);
+        res.status(500).json({errorMessage: "Internal Server Error"});
+    }
+});
+
 app.use("/api/v1/my-hotels", validateCookie, async(req: Request, res: Response) => {
 
     console.log("Route hit --> GET /api/v1/my-hotels");

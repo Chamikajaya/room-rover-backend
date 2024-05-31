@@ -8,6 +8,5 @@ export async function uploadImages(imageFiles: Express.Multer.File[]) {
         return res.url;
     });
 
-    const imageUrls = await Promise.all(uploadPromises);
-    return imageUrls;
+    return await Promise.all(uploadPromises);
 }

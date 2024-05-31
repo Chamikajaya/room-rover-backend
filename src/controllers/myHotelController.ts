@@ -24,15 +24,13 @@ export const createHotel = [
     handleValidationErrors,
     async (req: Request, res: Response) => {
 
-    console.log("Route hit --> POST /api/v1/my-hotels");
+        console.log("Route hit --> POST /api/v1/my-hotels");
         try {
 
             // Get the uploaded images from the request
             const imageFiles = req.files as Express.Multer.File[];
 
             const hotel: Hotel = req.body;
-
-            console.log("Hotel is --> " + JSON.stringify(hotel));
 
             // Uploading the images to cloudinary
             // if the image upload succeeds, the image URLs are stored in the imageURLs field of the hotel object. ->
@@ -93,34 +91,77 @@ export const createHotel = [
 // };
 
 
-export const getHotelById = async(req: Request, res: Response) => {
+// export const getHotelById = async(req: Request, res: Response) => {
+//
+//     console.log("Route hit --> GET /api/v1/my-hotels/:id");
+//
+//     try {
+//
+//         const hotelId = req.params.hotelId;
+//
+//         const hotel = await prisma.hotel.findUnique({
+//             where: {
+//                 id: hotelId,
+//                 userId: req.userId as string  // we need to make sure that the hotel belongs to the user who is requesting it. 😈
+//
+//             }
+//         });
+//
+//         if (!hotel) {
+//             res.status(404).json({errorMessage: "Hotel not found"});
+//             return;
+//         }
+//
+//         res.status(200).json(hotel);
+//
+//
+//
+//     } catch (e) {
+//         console.log("ERROR - GET HOTEL BY ID @GET --> " + e);
+//         res.status(500).json({errorMessage: "Internal Server Error"});
+//     }
+//
+// };
 
-    console.log("Route hit --> GET /api/v1/my-hotels/:id");
+
+export const updateHotel = async (req: Request, res: Response) => {
+
+    console.log("Route hit --> PUT /api/v1/my-hotels/:id");
 
     try {
 
-        const hotelId = req.params.id;
+        const hotel: Hotel = req.body;
+        const id = req.params.hotelId;
+        const userId = req.userId as string;
+        hotel.updatedAt = new Date();
 
-        const hotel = await prisma.hotel.findUnique({
+        const updatedHotelFromDb = await prisma.hotel.update({
             where: {
-                id: hotelId,
-                userId: req.userId as string  // we need to make sure that the hotel belongs to the user who is requesting it. 😈
-
-            }
+                id,
+                userId,
+            },
+            data: hotel,
         });
 
-        if (!hotel) {
+        if (!updatedHotelFromDb) {
             res.status(404).json({errorMessage: "Hotel not found"});
             return;
         }
 
-        res.status(200).json(hotel);
+        // Dealing with images update -->
+        const imageFiles = req.files as Express.Multer.File[];
+        const updatedUrls = await uploadImages(imageFiles);
+        const alreadyUploadedUrls = updatedHotelFromDb.imageURLs;
 
+        // merging the old and new image URLs + also countering the case when the user decided to delete all existing images and upload new ones.
+        updatedHotelFromDb.imageURLs = [...(alreadyUploadedUrls || []), ...updatedUrls];
+
+        res.status(200).json(updatedHotelFromDb);
 
 
     } catch (e) {
-        console.log("ERROR - GET HOTEL BY ID @GET --> " + e);
+        console.log("ERROR - UPDATE HOTEL @PUT --> " + e);
         res.status(500).json({errorMessage: "Internal Server Error"});
     }
 
-};
+}
