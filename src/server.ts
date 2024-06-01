@@ -10,8 +10,10 @@ import {validateCookie} from "./middleware/validateCookie";
 import {PrismaClient} from "@prisma/client";
 import {uploadImages} from "./utils/uploadImagesToCloudinary";
 import {upload} from "./controllers/myHotelController";
+import {hotelCreationValidationRules} from "./validations/hotelValidation";
+import {handleValidationErrors} from "./middleware/validate";
+import hotelsRouter from "./routes/hotelsRouter";
 
-;
 
 const prisma = new PrismaClient();
 
@@ -51,6 +53,7 @@ app.get("/hello", (req, res) => {
     })
 })
 
+app.use('/api/v1/hotels', hotelsRouter);
 app.use('/api/v1/my-hotels', myHotelsRouter);
 app.use('/api/v1/users', userRouter);
 
@@ -111,60 +114,64 @@ app.get("/api/v1/my-hotels", validateCookie, async (req: Request, res: Response)
 });
 
 
-app.put("/api/v1/my-hotels/:id", validateCookie, upload.array("imageFiles", 5), async (req: Request, res: Response) => {
-    console.log("Route hit --> PUT /api/v1/my-hotels/:id");
+app.put("/api/v1/my-hotels/:id", validateCookie, upload.array("imageFiles", 5), ...[
+    hotelCreationValidationRules,
+    handleValidationErrors,
+    async (req: Request, res: Response) => {
+        console.log("Route hit --> PUT /api/v1/my-hotels/:id");
 
 
-    try {
-        const id = req.params.id as string;
-        const userId = req.userId as string;
-        const {hotelId, imageUrls, ...hotelData} = req.body;
+        try {
+            const id = req.params.id as string;
+            const userId = req.userId as string;
+            const {hotelId, imageUrls, ...hotelData} = req.body;
 
-        // Parse numeric fields
-        hotelData.pricePerNight = parseFloat(hotelData.pricePerNight);
-        hotelData.starRating = parseFloat(hotelData.starRating);
+            // Parse numeric fields
+            hotelData.pricePerNight = parseFloat(hotelData.pricePerNight);
+            hotelData.starRating = parseFloat(hotelData.starRating);
 
-        // Update hotel data
-        const updatedHotelFromDb = await prisma.hotel.update({
-            where: {
-                id,
-                userId,
-            },
-            data: {
-                ...hotelData,
-                updatedAt: new Date(),
-            },
-        });
+            // Update hotel data
+            const updatedHotelFromDb = await prisma.hotel.update({
+                where: {
+                    id,
+                    userId,
+                },
+                data: {
+                    ...hotelData,
+                    updatedAt: new Date(),
+                },
+            });
 
-        if (!updatedHotelFromDb) {
-            res.status(404).json({errorMessage: "Hotel not found"});
-            return;
+            if (!updatedHotelFromDb) {
+                res.status(404).json({errorMessage: "Hotel not found"});
+                return;
+            }
+
+            // Handle image updates
+            const imageFiles = req.files as Express.Multer.File[];
+            const updatedUrls = await uploadImages(imageFiles);
+            const alreadyUploadedUrls = updatedHotelFromDb.imageURLs || [];
+            const mergedImageUrls = [...alreadyUploadedUrls, ...updatedUrls];
+
+            // Update imageURLs in the database
+            const updatedHotel = await prisma.hotel.update({
+                where: {
+                    id,
+                    userId,
+                },
+                data: {
+                    imageURLs: mergedImageUrls,
+                },
+            });
+
+            res.status(200).json(updatedHotel);
+
+        } catch (e) {
+            console.log("ERROR - UPDATE HOTEL @PUT --> " + e);
+            res.status(500).json({errorMessage: "Internal Server Error"});
         }
-
-        // Handle image updates
-        const imageFiles = req.files as Express.Multer.File[];
-        const updatedUrls = await uploadImages(imageFiles);
-        const alreadyUploadedUrls = updatedHotelFromDb.imageURLs || [];
-        const mergedImageUrls = [...alreadyUploadedUrls, ...updatedUrls];
-
-        // Update imageURLs in the database
-        const updatedHotel = await prisma.hotel.update({
-            where: {
-                id,
-                userId,
-            },
-            data: {
-                imageURLs: mergedImageUrls,
-            },
-        });
-
-        res.status(200).json(updatedHotel);
-
-    } catch (e) {
-        console.log("ERROR - UPDATE HOTEL @PUT --> " + e);
-        res.status(500).json({errorMessage: "Internal Server Error"});
     }
-});
+]);
 
 app.delete("/api/v1/my-hotels/:id", validateCookie, async (req: Request, res: Response) => {
     console.log("Route hit --> DELETE /api/v1/my-hotels/:id");
