@@ -46,6 +46,9 @@ export const createHotel = [
 
             hotel.starRating = Number(hotel.starRating);
 
+            hotel.numAdults = Number(hotel.numAdults);
+            hotel.numChildren = Number(hotel.numChildren);
+
             // creating the hotel
             const createdHotel = await prisma.hotel.create({
                 data: hotel,
@@ -136,6 +139,8 @@ export const createHotel = [
 //         // Parse numeric fields
 //         hotelData.pricePerNight = parseFloat(hotelData.pricePerNight);
 //         hotelData.starRating = parseFloat(hotelData.starRating);
+//          hotelData.numAdults = parseInt(hotelData.numAdults);
+//          hotelData.numChildren = parseInt(hotelData.numChildren);
 //
 //         // Update hotel data
 //         const updatedHotelFromDb = await prisma.hotel.update({

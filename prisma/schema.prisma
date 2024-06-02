@@ -35,6 +35,8 @@ model Hotel {
   city          String
   facilities    String[]
   pricePerNight Float
+  numAdults     Int
+  numChildren   Int
   starRating    Float    @default(0.0)
   imageURLs     String[]
   createdAt     DateTime @default(now())

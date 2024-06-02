@@ -129,7 +129,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
     try {
 
 
-        // If the token is provided, it tries to find a UserVerification instance in the database that has the same verificationToken as the provided token.
+        // If the token is provided, it tries to search a UserVerification instance in the database that has the same verificationToken as the provided token.
 
         const emailVerificationToken = await prisma.userVerification.findFirst({
             where: {verificationToken: token as string}

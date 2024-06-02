@@ -12,7 +12,7 @@ export const searchHotels = async (req: Request, res: Response) => {
 
         // pagination
         const currPage = Number(req.query.page) || 1;
-        const itemsPerPage = 5;
+        const itemsPerPage = 2;
         const skip = (currPage - 1) * itemsPerPage;
 
         const totalHotels = await prisma.hotel.count();
@@ -20,7 +20,8 @@ export const searchHotels = async (req: Request, res: Response) => {
 
         const hotelsFound = await prisma.hotel.findMany({
             skip,
-            take: itemsPerPage  // take is the number of items to be returned (limit)
+            take: itemsPerPage,  // take is the number of items to be returned (limit)
+
         });
 
         const response: SearchResponse = {
