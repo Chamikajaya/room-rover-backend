@@ -2,6 +2,8 @@ import {Request, Response} from 'express';
 import {PrismaClient} from '@prisma/client';
 import {SearchResponse} from '../types/searchResponse';
 import {buildTheQuery} from "../utils/buildTheQuery";
+import {getHotelByIdValidationRules} from "../validations/hotelValidation";
+import {handleValidationErrors} from "../middleware/validate";
 
 
 const prisma = new PrismaClient();
@@ -67,3 +69,34 @@ export const searchHotels = async (req: Request, res: Response) => {
         res.status(500).json({errorMessage: "Internal Server Error"});
     }
 };
+
+export const getSingleHotel = [
+
+    getHotelByIdValidationRules,
+    handleValidationErrors,
+
+    async (req: Request, res: Response) => {
+
+        console.log("Route hit --> GET /api/v1/hotels/:id");
+
+        try {
+            const hotelId = req.params.id;
+
+            const hotel = await prisma.hotel.findUnique({
+                where: {
+                    id: hotelId
+                }
+            });
+
+            if (!hotel) {
+                return res.status(404).json({errorMessage: "Hotel not found"});
+            }
+
+            res.status(200).json(hotel);
+
+        } catch (e) {
+            console.log("ERROR - GET SINGLE HOTEL @GET --> " + e);
+            res.status(500).json({errorMessage: "Internal Server Error"});
+        }
+    }
+]

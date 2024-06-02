@@ -1,11 +1,12 @@
 import {Router} from "express";
-import {searchHotels} from "../controllers/hotelsController";
+import {getSingleHotel, searchHotels} from "../controllers/hotelsController";
 
 
 const hotelsRouter = Router();
 
 
 hotelsRouter.get("/search", searchHotels);
+hotelsRouter.get("/:id", ...getSingleHotel)
 
 
 export default hotelsRouter;

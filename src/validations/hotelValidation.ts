@@ -12,3 +12,7 @@ export const hotelCreationValidationRules = [
     check('numAdults', 'Number of adults is required').isInt({min: 1}),
     check('numChildren', 'Number of children is required').isInt({min: 0}),
 ];
+
+export const getHotelByIdValidationRules = [
+    check('id', 'Hotel ID is required').not().isEmpty(),
+];
