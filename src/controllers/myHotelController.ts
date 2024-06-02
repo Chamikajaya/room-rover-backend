@@ -32,6 +32,8 @@ export const createHotel = [
 
             const hotel: Hotel = req.body;
 
+            console.log("Hotel data --> " + JSON.stringify(hotel));
+
             // Uploading the images to cloudinary
             // if the image upload succeeds, the image URLs are stored in the imageURLs field of the hotel object. ->
             hotel.imageURLs = await uploadImages(imageFiles);
@@ -46,8 +48,8 @@ export const createHotel = [
 
             hotel.starRating = Number(hotel.starRating);
 
-            hotel.numAdults = Number(hotel.numAdults);
-            hotel.numChildren = Number(hotel.numChildren);
+
+
 
             // creating the hotel
             const createdHotel = await prisma.hotel.create({
@@ -63,6 +65,7 @@ export const createHotel = [
         }
     }
 ]
+
 
 // export const getAllMyHotels = async(req: Request, res: Response) => {
 //
