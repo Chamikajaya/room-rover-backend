@@ -1,5 +1,12 @@
 import express from 'express';
-import {createHotel, upload} from "../controllers/myHotelController";
+import {
+    createHotel,
+    upload,
+    getAllMyHotels,
+    deleteHotel,
+    updateHotel,
+    getHotelById
+} from "../controllers/myHotelController";
 import {validateCookie} from "../middleware/validateCookie";
 
 
@@ -10,11 +17,12 @@ const myHotelsRouter = express.Router();
 // The upload middleware is used to upload images to the server. (cloudinary)
 // Finally The createHotel controller function creates a hotel in the database.
 myHotelsRouter.post("/", validateCookie, upload.array("imageFiles", 5), ...createHotel);
+myHotelsRouter.put("/:id", validateCookie, upload.array("imageFiles", 5), updateHotel);
 
-// ! myHotelsRouter.put("/:id", validateCookie, upload.array("imageFiles", 5), updateHotel);
+myHotelsRouter.get("/:hotelId", validateCookie, getHotelById);
+myHotelsRouter.get("/", validateCookie, getAllMyHotels)
 
-// ! myHotelsRouter.get("/:hotelId", validateCookie, getHotelById);
-//! myHotelsRouter.get("/", validateCookie, getAllMyHotels)
+myHotelsRouter.delete("/:hotelId", validateCookie, deleteHotel);
 
 
 export default myHotelsRouter;
