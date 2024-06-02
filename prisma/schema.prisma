@@ -35,8 +35,8 @@ model Hotel {
   city          String
   facilities    String[]
   pricePerNight Float
-  numAdults     String // String because PRISMA gave me errors when I used Int , connversion did not work in the controller so I had to use String
-  numChildren   String // String because PRISMA gave me errors when I used Int
+  numAdults     Int
+  numChildren   Int
   starRating    Int
   imageURLs     String[]
   createdAt     DateTime @default(now())

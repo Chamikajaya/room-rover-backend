@@ -130,8 +130,8 @@ app.put("/api/v1/my-hotels/:id", validateCookie, upload.array("imageFiles", 5), 
             hotelData.pricePerNight = parseFloat(hotelData.pricePerNight);
             hotelData.starRating = parseFloat(hotelData.starRating);
 
-            // hotelData.numAdults = parseInt(hotelData.numAdults);
-            // hotelData.numChildren = parseInt(hotelData.numChildren);
+            hotelData.numAdults = parseInt(hotelData.numAdults);
+            hotelData.numChildren = parseInt(hotelData.numChildren);
 
             // Update hotel data
             const updatedHotelFromDb = await prisma.hotel.update({
