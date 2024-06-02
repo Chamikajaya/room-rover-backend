@@ -19,6 +19,20 @@ export const searchHotels = async (req: Request, res: Response) => {
         // Construct the search query
         const searchQuery = buildTheQuery(req.query);
 
+        // extracting the sort parameter
+        const sortBy = req.query.sortBy as string;
+
+        let orderBy: any = {};
+
+        if (sortBy === "starRatingDesc") {
+            orderBy = {starRating: "desc"};
+        } else if (sortBy === "pricePerNightAsc") {
+            orderBy = {pricePerNight: "asc"};
+        } else if (sortBy === "pricePerNightDesc") {
+            orderBy = {pricePerNight: "desc"};
+        }
+
+
         // Get the total count of hotels matching the search query
         const totalHotels = await prisma.hotel.count({
             where: searchQuery
@@ -30,6 +44,7 @@ export const searchHotels = async (req: Request, res: Response) => {
         // Find hotels based on the search query with pagination
         const hotelsFound = await prisma.hotel.findMany({
             where: searchQuery,
+            orderBy: orderBy,
             skip,
             take: itemsPerPage, // Take is the number of items to be returned (limit)
         });
