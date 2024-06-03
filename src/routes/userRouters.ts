@@ -1,5 +1,12 @@
 import express from "express";
-import {login, logout, register, sendUserIdUponTokenValidation, verifyEmail} from "../controllers/authController";
+import {
+    getUser,
+    login,
+    logout,
+    register,
+    sendUserIdUponTokenValidation,
+    verifyEmail
+} from "../controllers/authController";
 import {validateCookie} from "../middleware/validateCookie";
 
 
@@ -10,5 +17,7 @@ userRouter.post('/verify-email', verifyEmail);
 userRouter.post('/login', ...login);
 userRouter.get("/validate-token", validateCookie, sendUserIdUponTokenValidation);
 userRouter.post("/logout", logout);
+
+userRouter.get("/me", validateCookie, getUser);
 
 export default userRouter;
