@@ -7,4 +7,4 @@ if (!apiKey) throw new Error("No Pinecone API key found in environment variables
 
 const pinecone = new Pinecone({apiKey: apiKey});
 
-export const roomieIndex =  pinecone.index("roomie")
+export const hotelIndex =  pinecone.index("roomie")
