@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.confirmBooking = exports.createPaymentIntent = exports.getSingleHotel = exports.searchHotels = void 0;
+exports.confirmBooking = exports.createPaymentIntent = exports.getSingleHotel = exports.getAllHotels = exports.searchHotels = void 0;
 const client_1 = require("@prisma/client");
 const buildTheQuery_1 = require("../utils/buildTheQuery");
 const hotelValidation_1 = require("../validations/hotelValidation");
@@ -72,6 +72,38 @@ const searchHotels = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.searchHotels = searchHotels;
+const getAllHotels = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Route hit --> GET /api/v1/hotels");
+    try {
+        const currPage = Number(req.query.page) || 1;
+        const itemsPerPage = 5;
+        const skip = (currPage - 1) * itemsPerPage;
+        const totalHotels = yield prisma.hotel.count({});
+        const totalPages = Math.ceil(totalHotels / itemsPerPage);
+        const hotels = yield prisma.hotel.findMany({
+            orderBy: {
+                createdAt: 'desc'
+            },
+            skip,
+            take: itemsPerPage
+        });
+        const response = {
+            hotelsFound: hotels,
+            paginationInfo: {
+                totalHotels,
+                totalPages,
+                currPage
+            }
+        };
+        // Send the response
+        res.status(200).json(response);
+    }
+    catch (e) {
+        console.log("ERROR - GET ALL HOTELS @GET --> " + e);
+        res.status(500).json({ errorMessage: "Internal Server Error" });
+    }
+});
+exports.getAllHotels = getAllHotels;
 exports.getSingleHotel = [
     hotelValidation_1.getHotelByIdValidationRules,
     validate_1.handleValidationErrors,

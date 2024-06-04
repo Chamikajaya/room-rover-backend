@@ -10,6 +10,7 @@
   "author": "Chamika Jayasinghe",
   "license": "ISC",
   "dependencies": {
+    "@pinecone-database/pinecone": "^2.2.2",
     "@prisma/client": "^5.14.0",
     "@types/nodemailer": "^6.4.15",
     "@types/uuid": "^9.0.8",
@@ -24,6 +25,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.13",
+    "openai": "^4.48.1",
     "stripe": "^15.9.0",
     "uuid": "^9.0.1"
   },
