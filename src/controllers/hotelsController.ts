@@ -6,6 +6,7 @@ import {getHotelByIdValidationRules} from "../validations/hotelValidation";
 import {handleValidationErrors} from "../middleware/validate";
 import Stripe from 'stripe';
 
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
 
 
@@ -104,7 +105,7 @@ export const getSingleHotel = [
     }
 ]
 
-export const doPayment = async (req: Request, res: Response) => {
+export const createPaymentIntent = async (req: Request, res: Response) => {
 
     console.log("Route hit --> POST /api/v1/hotels/:id/bookings/payment-intent");
 
@@ -161,5 +162,74 @@ export const doPayment = async (req: Request, res: Response) => {
         console.log("ERROR - DO PAYMENT @POST --> " + e);
         res.status(500).json({errorMessage: "Internal Server Error"});
     }
+
+};
+
+export const confirmBooking = async (req: Request, res: Response) => {
+
+    console.log("Route hit --> POST /api/v1/hotels/:id/bookings");
+
+    try {
+
+        // checking whether the paymentIntentId is present in the request body
+        const {paymentIntentId} = req.body;
+        const {checkIn, checkOut, numAdults, numChildren, totalPrice, firstName, lastName, email} = req.body;
+
+
+        // getting the invoice for the booking
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId as string);
+
+        if (!paymentIntent) {
+            return res.status(400).json({errorMessage: "Payment intent not found. Null or Invalid payment intent ID"});
+        }
+
+        // checking whether the userId in the metadata of the paymentIntent is the same as the userId extracted from the cookie
+        // security measure to ensure that the user who initiated the payment earlier,  is the same user who is trying to confirm the booking now
+        if (paymentIntent.metadata.userId !== req.userId) {
+            return res.status(403).json({errorMessage: "Payment Intent mismatch with the given info"});
+        }
+
+        // checking whether the hotelId in the metadata of the paymentIntent is the same as the hotelId extracted from the params
+        // to ensure that the booking is being done for the same hotel for which the payment was made
+        if (paymentIntent.metadata.hotelId !== req.params.id) {
+            return res.status(400).json({errorMessage: "Payment Intent mismatch with the given info"});
+        }
+
+        // before doing the booking , checking whether the payment has been successful
+        if (paymentIntent.status !== "succeeded") {
+            return res.status(400).json(
+                {
+                    errorMessage: "Payment not successful",
+                    errCode: paymentIntent.status
+                },
+            );
+        }
+
+
+        // ! TODO: CAREFUL WHEN SENDING THE REQUEST FROM CLIENT -INCLUDE ALL NECESSARY FIELDS
+        // adding the booking to the database
+        const booking = await prisma.booking.create({
+            data: {
+                userId: req.userId,
+                hotelId: req.params.id,
+                checkIn: new Date(checkIn),
+                checkOut: new Date(checkOut),
+                numAdults,
+                numChildren,
+                totalPrice,
+                email,
+                firstName,
+                lastName
+            },
+        });
+
+        res.status(200).json(booking);
+
+
+    } catch (e) {
+        console.log("ERROR - CONFIRM BOOKING & DO PAYMENT @POST --> " + e);
+        res.status(500).json({errorMessage: "Internal Server Error"});
+    }
+
 
 };
