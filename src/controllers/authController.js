@@ -177,6 +177,7 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.logout = logout;
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("Route hit --> GET /api/v1/users/me");
+    console.log("User ID: " + req.userId);
     try {
         const user = yield prisma.user.findUnique({
             where: { id: req.userId },
@@ -189,7 +190,7 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 emailVerified: true
             }
         });
-        return res.status(200).json({ user });
+        return res.status(200).json(user);
     }
     catch (e) {
         console.log("ERROR - GET USER @GET --> " + e);

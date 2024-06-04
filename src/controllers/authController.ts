@@ -220,9 +220,11 @@ export const logout = async (req: Request, res: Response) => {
 export const getUser = async (req: Request, res: Response) => {
 
     console.log("Route hit --> GET /api/v1/users/me");
+    console.log("User ID: " + req.userId);
 
 
     try {
+
         const user = await prisma.user.findUnique({
             where: {id: req.userId},
             // not returning the password field in the response
@@ -235,7 +237,9 @@ export const getUser = async (req: Request, res: Response) => {
             }
         });
 
-        return res.status(200).json({user});
+
+
+        return res.status(200).json(user);
     } catch (e) {
         console.log("ERROR - GET USER @GET --> " + e);
         res.status(500).json({errorMessage: "Internal Server Error"});
