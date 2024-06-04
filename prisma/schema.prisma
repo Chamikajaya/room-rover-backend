@@ -8,14 +8,16 @@ datasource db {
 }
 
 model User {
-  id               String             @id @default(auto()) @map("_id") @db.ObjectId
-  email            String             @unique
-  emailVerified    Boolean            @default(false)
-  password         String
-  firstName        String
-  lastName         String
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  email         String  @unique
+  emailVerified Boolean @default(false)
+  password      String
+  firstName     String
+  lastName      String
+
   Hotel            Hotel[]
   UserVerification UserVerification[] // one to many relationship - A user may have multiple verification tokens
+  Booking          Booking[]
 }
 
 model UserVerification {
@@ -41,6 +43,26 @@ model Hotel {
   imageURLs     String[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id])
-  userId        String   @db.ObjectId
+
+  user     User      @relation(fields: [userId], references: [id])
+  userId   String    @db.ObjectId
+  bookings Booking[]
+}
+
+model Booking {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName   String
+  lastName    String
+  email       String
+  checkIn     DateTime
+  checkOut    DateTime
+  numAdults   Int
+  numChildren Int
+  totalPrice  Float
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String? @db.ObjectId
+
+  hotelId String @db.ObjectId
+  Hotel   Hotel  @relation(fields: [hotelId], references: [id])
 }
