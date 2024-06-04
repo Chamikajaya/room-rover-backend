@@ -8,6 +8,7 @@ import myHotelsRouter from "./routes/myHotelsRouters";
 import { transporter } from "./utils/sendVerificationEmail";
 
 import hotelsRouter from "./routes/hotelsRouter";
+import chatbotRouter from "./routes/chatbotRouter";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -40,6 +41,7 @@ transporter.verify((err, success) => {
 app.use("/api/v1/hotels", hotelsRouter);
 app.use("/api/v1/my-hotels", myHotelsRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/chat", chatbotRouter);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
