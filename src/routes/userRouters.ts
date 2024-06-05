@@ -3,7 +3,7 @@ import {
     getUser,
     login,
     logout,
-    register,
+    register, requestPasswordReset, resetPassword,
     sendUserIdUponTokenValidation,
     verifyEmail
 } from "../controllers/authController";
@@ -17,6 +17,8 @@ userRouter.post('/verify-email', verifyEmail);
 userRouter.post('/login', ...login);
 userRouter.get("/validate-token", validateCookie, sendUserIdUponTokenValidation);
 userRouter.post("/logout", logout);
+userRouter.post("request-password-reset", requestPasswordReset);
+userRouter.post("reset-password", resetPassword);
 
 userRouter.get("/me", validateCookie, getUser);
 

@@ -12,5 +12,7 @@ userRouter.post('/verify-email', authController_1.verifyEmail);
 userRouter.post('/login', ...authController_1.login);
 userRouter.get("/validate-token", validateCookie_1.validateCookie, authController_1.sendUserIdUponTokenValidation);
 userRouter.post("/logout", authController_1.logout);
+userRouter.post("request-password-reset", authController_1.requestPasswordReset);
+userRouter.post("reset-password", authController_1.resetPassword);
 userRouter.get("/me", validateCookie_1.validateCookie, authController_1.getUser);
 exports.default = userRouter;

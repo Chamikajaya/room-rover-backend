@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUser = exports.logout = exports.login = exports.verifyEmail = exports.register = exports.sendUserIdUponTokenValidation = void 0;
+exports.getUser = exports.logout = exports.login = exports.resetPassword = exports.requestPasswordReset = exports.verifyEmail = exports.register = exports.sendUserIdUponTokenValidation = void 0;
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -20,6 +20,7 @@ const authValidation_1 = require("../validations/authValidation");
 const validate_1 = require("../middleware/validate");
 const uuid_1 = require("uuid");
 const sendVerificationEmail_1 = require("../utils/sendVerificationEmail");
+const sendPasswordResetEmail_1 = require("../utils/sendPasswordResetEmail");
 const prisma = new client_1.PrismaClient();
 // generating the jwt token
 const generateToken = (userId) => {
@@ -135,6 +136,80 @@ const verifyEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.verifyEmail = verifyEmail;
+const requestPasswordReset = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Route hit --> POST /api/v1/users/request-password-reset");
+    try {
+        const { email } = req.body;
+        const user = yield prisma.user.findFirst({
+            where: { email }
+        });
+        if (!user) {
+            return res.status(400).json({ errorMessage: "Please check your input and try again." });
+        }
+        const resetToken = (0, uuid_1.v4)();
+        const resetTokenExpiresAt = new Date(Date.now() + 60 * 15 * 1000); // 15 minutes
+        // check whether a token already exists
+        const passwordResetTokenExists = yield prisma.passwordReset.findFirst({
+            where: { userId: user.id }
+        });
+        // if so remove it from db
+        if (passwordResetTokenExists) {
+            yield prisma.passwordReset.delete({
+                where: { id: passwordResetTokenExists.id }
+            });
+        }
+        // create a new password reset token
+        yield prisma.passwordReset.create({
+            data: {
+                token: resetToken,
+                expiresAt: resetTokenExpiresAt,
+                userId: user.id
+            }
+        });
+        // send the password reset email
+        yield (0, sendPasswordResetEmail_1.sendPasswordResetEmail)(email, resetToken);
+        return res.status(200).json({ successMessage: "Password reset email sent successfully." });
+    }
+    catch (e) {
+        console.log("ERROR - REQUEST PASSWORD RESET @POST --> " + e);
+        res.status(500).json({ errorMessage: "Internal Server Error" });
+    }
+});
+exports.requestPasswordReset = requestPasswordReset;
+// TODO: In frontend upon successful password reset, redirect the user to the login page.
+const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Route hit --> POST /api/v1/users/reset-password");
+    try {
+        // get the token and the new password from the request body
+        const { token, newPassword } = req.body;
+        // find the password reset token in the database which matches the provided token
+        const passwordReset = yield prisma.passwordReset.findFirst({
+            where: { token }
+        });
+        // if the token is invalid or expired, return an error
+        if (!passwordReset || passwordReset.expiresAt < new Date()) {
+            return res.status(400).json({ errorMessage: "Invalid or expired token" });
+        }
+        const hashedPassword = yield bcryptjs_1.default.hash(newPassword, 10);
+        // update the user's password
+        yield prisma.user.update({
+            where: { id: passwordReset.userId },
+            data: {
+                password: hashedPassword
+            }
+        });
+        // delete the password reset token from the database
+        yield prisma.passwordReset.delete({
+            where: { id: passwordReset.id }
+        });
+        return res.status(200).json({ successMessage: "Password reset successfully" });
+    }
+    catch (e) {
+        console.log("ERROR - RESET PASSWORD @POST --> " + e);
+        res.status(500).json({ errorMessage: "Internal Server Error" });
+    }
+});
+exports.resetPassword = resetPassword;
 exports.login = [
     authValidation_1.loginValidationRules,
     validate_1.handleValidationErrors,

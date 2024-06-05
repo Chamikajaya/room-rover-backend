@@ -7,6 +7,7 @@ import {handleValidationErrors} from "../middleware/validate";
 import nodemailer from "nodemailer";
 import {v4 as uuidv4} from 'uuid';
 import {sendVerificationEmail} from "../utils/sendVerificationEmail";
+import {sendPasswordResetEmail} from "../utils/sendPasswordResetEmail";
 
 
 const prisma = new PrismaClient();
@@ -167,6 +168,99 @@ export const verifyEmail = async (req: Request, res: Response) => {
 };
 
 
+export const requestPasswordReset = async (req: Request, res: Response) => {
+
+    console.log("Route hit --> POST /api/v1/users/request-password-reset");
+
+    try {
+        const {email} = req.body;
+
+        const user = await prisma.user.findFirst({
+            where: {email}
+        });
+
+        if (!user) {
+            return res.status(400).json({errorMessage: "Please check your input and try again."});
+        }
+
+        const resetToken = uuidv4();
+        const resetTokenExpiresAt = new Date(Date.now() + 60 * 15 * 1000);  // 15 minutes
+
+        // check whether a token already exists
+        const passwordResetTokenExists = await prisma.passwordReset.findFirst({
+            where: {userId: user.id as string}
+        });
+
+        // if so remove it from db
+        if (passwordResetTokenExists) {
+            await prisma.passwordReset.delete({
+                where: {id: passwordResetTokenExists.id}
+            })
+        }
+
+        // create a new password reset token
+        await prisma.passwordReset.create({
+            data: {
+                token: resetToken,
+                expiresAt: resetTokenExpiresAt,
+                userId: user.id
+            }
+        });
+
+        // send the password reset email
+        await sendPasswordResetEmail(email, resetToken);
+
+        return res.status(200).json({successMessage: "Password reset email sent successfully."});
+
+
+    } catch (e) {
+        console.log("ERROR - REQUEST PASSWORD RESET @POST --> " + e);
+        res.status(500).json({errorMessage: "Internal Server Error"});
+    }
+};
+
+// TODO: In frontend upon successful password reset, redirect the user to the login page.
+export const resetPassword = async (req: Request, res: Response) => {
+    console.log("Route hit --> POST /api/v1/users/reset-password");
+
+    try {
+        // get the token and the new password from the request body
+        const {token, newPassword} = req.body;
+
+        // find the password reset token in the database which matches the provided token
+        const passwordReset = await prisma.passwordReset.findFirst({
+            where: {token}
+        });
+
+        // if the token is invalid or expired, return an error
+        if (!passwordReset || passwordReset.expiresAt < new Date()) {
+            return res.status(400).json({errorMessage: "Invalid or expired token"});
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // update the user's password
+        await prisma.user.update({
+            where: {id: passwordReset.userId},
+            data: {
+                password: hashedPassword
+            }
+        });
+
+        // delete the password reset token from the database
+        await prisma.passwordReset.delete({
+            where: {id: passwordReset.id}
+        });
+
+        return res.status(200).json({successMessage: "Password reset successfully"});
+
+
+    } catch (e) {
+        console.log("ERROR - RESET PASSWORD @POST --> " + e);
+        res.status(500).json({errorMessage: "Internal Server Error"});
+
+    }
+};
 
 
 
