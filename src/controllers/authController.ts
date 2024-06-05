@@ -174,6 +174,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
     try {
         const {email} = req.body;
+        console.log(email);
 
         const user = await prisma.user.findFirst({
             where: {email}
@@ -219,18 +220,22 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     }
 };
 
-// TODO: In frontend upon successful password reset, redirect the user to the login page.
 export const resetPassword = async (req: Request, res: Response) => {
     console.log("Route hit --> POST /api/v1/users/reset-password");
 
     try {
         // get the token and the new password from the request body
+
         const {token, newPassword} = req.body;
+        console.log("Token: " + token);
+        console.log("New password: " + newPassword);
 
         // find the password reset token in the database which matches the provided token
         const passwordReset = await prisma.passwordReset.findFirst({
             where: {token}
         });
+
+        console.log("Password reset token: " + passwordReset);
 
         // if the token is invalid or expired, return an error
         if (!passwordReset || passwordReset.expiresAt < new Date()) {

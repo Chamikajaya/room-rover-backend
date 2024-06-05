@@ -140,6 +140,7 @@ const requestPasswordReset = (req, res) => __awaiter(void 0, void 0, void 0, fun
     console.log("Route hit --> POST /api/v1/users/request-password-reset");
     try {
         const { email } = req.body;
+        console.log(email);
         const user = yield prisma.user.findFirst({
             where: { email }
         });
@@ -176,16 +177,18 @@ const requestPasswordReset = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.requestPasswordReset = requestPasswordReset;
-// TODO: In frontend upon successful password reset, redirect the user to the login page.
 const resetPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("Route hit --> POST /api/v1/users/reset-password");
     try {
         // get the token and the new password from the request body
         const { token, newPassword } = req.body;
+        console.log("Token: " + token);
+        console.log("New password: " + newPassword);
         // find the password reset token in the database which matches the provided token
         const passwordReset = yield prisma.passwordReset.findFirst({
             where: { token }
         });
+        console.log("Password reset token: " + passwordReset);
         // if the token is invalid or expired, return an error
         if (!passwordReset || passwordReset.expiresAt < new Date()) {
             return res.status(400).json({ errorMessage: "Invalid or expired token" });
