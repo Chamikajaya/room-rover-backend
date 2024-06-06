@@ -6,8 +6,8 @@ import {loginValidationRules, registerValidationRules} from "../validations/auth
 import {handleValidationErrors} from "../middleware/validate";
 import nodemailer from "nodemailer";
 import {v4 as uuidv4} from 'uuid';
-import {sendVerificationEmail} from "../utils/sendVerificationEmail";
-import {sendPasswordResetEmail} from "../utils/sendPasswordResetEmail";
+import {sendVerificationEmail} from "../utils/emailRelatedUtils/sendVerificationEmail";
+import {sendPasswordResetEmail} from "../utils/emailRelatedUtils/sendPasswordResetEmail";
 
 
 const prisma = new PrismaClient();

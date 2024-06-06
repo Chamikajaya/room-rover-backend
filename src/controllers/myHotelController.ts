@@ -4,8 +4,8 @@ import {Request, Response} from "express";
 import {uploadImages} from "../utils/uploadImagesToCloudinary";
 import {hotelCreationValidationRules} from "../validations/hotelValidation";
 import {handleValidationErrors} from "../middleware/validate";
-import {createEmbeddingForHotel} from "../utils/createEmbeddingForHotel";
-import {hotelIndex} from "../utils/pinecone";
+import {createEmbeddingForHotel} from "../utils/botRelatedUtils/createEmbeddingForHotel";
+import {hotelIndex} from "../utils/botRelatedUtils/pinecone";
 
 const prisma = new PrismaClient();
 

@@ -18,7 +18,7 @@ const buildTheQuery_1 = require("../utils/buildTheQuery");
 const hotelValidation_1 = require("../validations/hotelValidation");
 const validate_1 = require("../middleware/validate");
 const stripe_1 = __importDefault(require("stripe"));
-const sendBookingConfirmationEmail_1 = require("../utils/sendBookingConfirmationEmail");
+const sendBookingConfirmationEmail_1 = require("../utils/emailRelatedUtils/sendBookingConfirmationEmail");
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY);
 const prisma = new client_1.PrismaClient();
 const searchHotels = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

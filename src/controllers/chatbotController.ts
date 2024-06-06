@@ -1,8 +1,8 @@
 import {Request, Response} from "express";
 import OpenAI from "openai";
 import ChatCompletionMessage = OpenAI.ChatCompletionMessage;
-import openAI, {getEmbedding} from "../utils/openai";
-import {hotelIndex} from "../utils/pinecone";
+import openAI, {getEmbedding} from "../utils/botRelatedUtils/openai";
+import {hotelIndex} from "../utils/botRelatedUtils/pinecone";
 import {PrismaClient} from "@prisma/client";
 import {OpenAIStream, StreamingTextResponse} from "ai";  // ! GOT DEPRECATED WARNING
 

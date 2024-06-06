@@ -10,9 +10,10 @@ const userRouters_1 = __importDefault(require("./routes/userRouters"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const cloudinary_1 = require("cloudinary");
 const myHotelsRouters_1 = __importDefault(require("./routes/myHotelsRouters"));
-const sendVerificationEmail_1 = require("./utils/sendVerificationEmail");
+const sendVerificationEmail_1 = require("./utils/emailRelatedUtils/sendVerificationEmail");
 const hotelsRouter_1 = __importDefault(require("./routes/hotelsRouter"));
 const chatbotRouter_1 = __importDefault(require("./routes/chatbotRouter"));
+const bookingsRouter_1 = __importDefault(require("./routes/bookingsRouter"));
 cloudinary_1.v2.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -38,6 +39,7 @@ sendVerificationEmail_1.transporter.verify((err, success) => {
 app.use("/api/v1/hotels", hotelsRouter_1.default);
 app.use("/api/v1/my-hotels", myHotelsRouters_1.default);
 app.use("/api/v1/users", userRouters_1.default);
+app.use("/api/v1/my-bookings", bookingsRouter_1.default);
 app.use("/api/v1/chat", chatbotRouter_1.default);
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {

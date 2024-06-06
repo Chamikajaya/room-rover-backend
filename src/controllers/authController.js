@@ -19,8 +19,8 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const authValidation_1 = require("../validations/authValidation");
 const validate_1 = require("../middleware/validate");
 const uuid_1 = require("uuid");
-const sendVerificationEmail_1 = require("../utils/sendVerificationEmail");
-const sendPasswordResetEmail_1 = require("../utils/sendPasswordResetEmail");
+const sendVerificationEmail_1 = require("../utils/emailRelatedUtils/sendVerificationEmail");
+const sendPasswordResetEmail_1 = require("../utils/emailRelatedUtils/sendPasswordResetEmail");
 const prisma = new client_1.PrismaClient();
 // generating the jwt token
 const generateToken = (userId) => {

@@ -5,10 +5,11 @@ import userRouter from "./routes/userRouters";
 import cookieParser from "cookie-parser";
 import { v2 as cloudinary } from "cloudinary";
 import myHotelsRouter from "./routes/myHotelsRouters";
-import { transporter } from "./utils/sendVerificationEmail";
+import { transporter } from "./utils/emailRelatedUtils/sendVerificationEmail";
 
 import hotelsRouter from "./routes/hotelsRouter";
 import chatbotRouter from "./routes/chatbotRouter";
+import bookingsRouter from "./routes/bookingsRouter";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -41,6 +42,7 @@ transporter.verify((err, success) => {
 app.use("/api/v1/hotels", hotelsRouter);
 app.use("/api/v1/my-hotels", myHotelsRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/my-bookings", bookingsRouter);
 app.use("/api/v1/chat", chatbotRouter);
 
 const PORT = process.env.PORT || 4000;

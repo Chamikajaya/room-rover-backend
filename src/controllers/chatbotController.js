@@ -33,8 +33,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendMessage = void 0;
-const openai_1 = __importStar(require("../utils/openai"));
-const pinecone_1 = require("../utils/pinecone");
+const openai_1 = __importStar(require("../utils/botRelatedUtils/openai"));
+const pinecone_1 = require("../utils/botRelatedUtils/pinecone");
 const client_1 = require("@prisma/client");
 const ai_1 = require("ai"); // ! GOT DEPRECATED WARNING
 const prisma = new client_1.PrismaClient();

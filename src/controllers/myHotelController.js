@@ -29,8 +29,8 @@ const client_1 = require("@prisma/client");
 const uploadImagesToCloudinary_1 = require("../utils/uploadImagesToCloudinary");
 const hotelValidation_1 = require("../validations/hotelValidation");
 const validate_1 = require("../middleware/validate");
-const createEmbeddingForHotel_1 = require("../utils/createEmbeddingForHotel");
-const pinecone_1 = require("../utils/pinecone");
+const createEmbeddingForHotel_1 = require("../utils/botRelatedUtils/createEmbeddingForHotel");
+const pinecone_1 = require("../utils/botRelatedUtils/pinecone");
 const prisma = new client_1.PrismaClient();
 // configuring multer
 const storage = multer_1.default.memoryStorage();

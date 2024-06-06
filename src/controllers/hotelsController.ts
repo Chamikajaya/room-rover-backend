@@ -5,7 +5,7 @@ import {buildTheQuery} from "../utils/buildTheQuery";
 import {getHotelByIdValidationRules} from "../validations/hotelValidation";
 import {handleValidationErrors} from "../middleware/validate";
 import Stripe from 'stripe';
-import {sendBookingConfirmationEmail} from "../utils/sendBookingConfirmationEmail";
+import {sendBookingConfirmationEmail} from "../utils/emailRelatedUtils/sendBookingConfirmationEmail";
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
