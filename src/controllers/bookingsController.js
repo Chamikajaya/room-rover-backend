@@ -19,9 +19,19 @@ const getMyBookings = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const bookings = yield prisma.booking.findMany({
             where: {
                 userId
+            },
+            include: {
+                Hotel: {
+                    select: {
+                        name: true
+                    }
+                }
             }
         });
-        res.status(200).json(bookings);
+        // Transform the response to include the hotel name directly in the booking object
+        const bookingsWithHotelName = bookings.map(booking => (Object.assign(Object.assign({}, booking), { hotelName: booking.Hotel.name })));
+        console.log("Bookings --> ", bookingsWithHotelName);
+        res.status(200).json(bookingsWithHotelName);
     }
     catch (e) {
         console.log("ERROR - MY BOOKINGS @GET --> " + e);
