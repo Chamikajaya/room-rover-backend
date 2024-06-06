@@ -149,7 +149,7 @@ const createPaymentIntent = (req, res) => __awaiter(void 0, void 0, void 0, func
         const totalAmount = hotel.pricePerNight * nights;
         //  creating a payment intent (A payment intent represents an attempt to collect payment from a customer)
         const paymentIntent = yield stripe.paymentIntents.create({
-            amount: totalAmount,
+            amount: totalAmount * 100, // converting the amount to cents (Stripe expects the amount in cents)
             currency: 'usd',
             metadata: {
                 userId: userId,
@@ -201,7 +201,6 @@ const confirmBooking = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 errCode: paymentIntent.status
             });
         }
-        // ! TODO: CAREFUL WHEN SENDING THE REQUEST FROM CLIENT -INCLUDE ALL NECESSARY FIELDS
         // adding the booking to the database
         const booking = yield prisma.booking.create({
             data: {

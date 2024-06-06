@@ -175,11 +175,11 @@ export const createPaymentIntent = async (req: Request, res: Response) => {
 
         // * calculating the total amount to be paid in the server side rather than the client side because ->
         // Integrity - By performing calculations on the server-side, we ensure that the data is consistent and accurate. This is because the server environment is controlled and less prone to manipulation compared to the client-side.
-        const totalAmount = hotel.pricePerNight * nights;
+        const totalAmount = hotel.pricePerNight * nights ;
 
         //  creating a payment intent (A payment intent represents an attempt to collect payment from a customer)
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: totalAmount,
+            amount: totalAmount * 100, // converting the amount to cents (Stripe expects the amount in cents)
             currency: 'usd',
             metadata: {  // In this case, the metadata is used to store additional context about the payment intent. It's storing the userId and hotelId to keep track of which user is making the payment and for which hotel.
                 userId: userId,
@@ -249,8 +249,6 @@ export const confirmBooking = async (req: Request, res: Response) => {
             );
         }
 
-
-        // ! TODO: CAREFUL WHEN SENDING THE REQUEST FROM CLIENT -INCLUDE ALL NECESSARY FIELDS
         // adding the booking to the database
         const booking = await prisma.booking.create({
             data: {
