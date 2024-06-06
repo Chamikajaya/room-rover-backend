@@ -5,6 +5,7 @@ import {buildTheQuery} from "../utils/buildTheQuery";
 import {getHotelByIdValidationRules} from "../validations/hotelValidation";
 import {handleValidationErrors} from "../middleware/validate";
 import Stripe from 'stripe';
+import {sendBookingConfirmationEmail} from "../utils/sendBookingConfirmationEmail";
 
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string)
@@ -249,13 +250,14 @@ export const confirmBooking = async (req: Request, res: Response) => {
             );
         }
 
+
         // adding the booking to the database
         const booking = await prisma.booking.create({
             data: {
                 userId: req.userId,
                 hotelId: req.params.id,
-                checkIn: new Date(checkIn),
-                checkOut: new Date(checkOut),
+                checkIn,
+                checkOut,
                 numAdults,
                 numChildren,
                 totalPrice,
@@ -265,7 +267,30 @@ export const confirmBooking = async (req: Request, res: Response) => {
             },
         });
 
-        res.status(200).json(booking);
+        const relatedHotel = await prisma.hotel.findUnique({
+            where: {
+                id: req.params.id
+            },
+            select: {
+                name: true,
+                city: true,
+                country: true
+            }
+        });
+
+        await sendBookingConfirmationEmail(
+            email,
+            numAdults,
+            numChildren,
+            checkIn,
+            checkOut ,
+            totalPrice,
+            relatedHotel?.name as string,
+            relatedHotel?.city as string,
+            relatedHotel?.country as string
+        );
+
+        res.status(200).json({successMessage: "Booking confirmation email sent successfully."});
 
 
     } catch (e) {

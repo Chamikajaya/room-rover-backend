@@ -18,6 +18,7 @@ const buildTheQuery_1 = require("../utils/buildTheQuery");
 const hotelValidation_1 = require("../validations/hotelValidation");
 const validate_1 = require("../middleware/validate");
 const stripe_1 = __importDefault(require("stripe"));
+const sendBookingConfirmationEmail_1 = require("../utils/sendBookingConfirmationEmail");
 const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY);
 const prisma = new client_1.PrismaClient();
 const searchHotels = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -206,8 +207,8 @@ const confirmBooking = (req, res) => __awaiter(void 0, void 0, void 0, function*
             data: {
                 userId: req.userId,
                 hotelId: req.params.id,
-                checkIn: new Date(checkIn),
-                checkOut: new Date(checkOut),
+                checkIn,
+                checkOut,
                 numAdults,
                 numChildren,
                 totalPrice,
@@ -216,7 +217,18 @@ const confirmBooking = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 lastName
             },
         });
-        res.status(200).json(booking);
+        const relatedHotel = yield prisma.hotel.findUnique({
+            where: {
+                id: req.params.id
+            },
+            select: {
+                name: true,
+                city: true,
+                country: true
+            }
+        });
+        yield (0, sendBookingConfirmationEmail_1.sendBookingConfirmationEmail)(email, numAdults, numChildren, checkIn, checkOut, totalPrice, relatedHotel === null || relatedHotel === void 0 ? void 0 : relatedHotel.name, relatedHotel === null || relatedHotel === void 0 ? void 0 : relatedHotel.city, relatedHotel === null || relatedHotel === void 0 ? void 0 : relatedHotel.country);
+        res.status(200).json({ successMessage: "Booking confirmation email sent successfully." });
     }
     catch (e) {
         console.log("ERROR - CONFIRM BOOKING & DO PAYMENT @POST --> " + e);
