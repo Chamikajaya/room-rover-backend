@@ -24,7 +24,7 @@ const generateToken = (userId: string) => {
 const setCookie = (res: Response, token: string) => {
     res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",  // set to true in production
+        secure: true,  // set to true in production
         maxAge: 1000 * 60 * 60 * 24,  // 1 day in ms -> After this time, the cookie will expire, and the user will need to authenticate again.
     });
 };

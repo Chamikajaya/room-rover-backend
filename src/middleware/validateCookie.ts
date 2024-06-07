@@ -24,11 +24,14 @@ export const validateCookie = (req: Request, res: Response, next: NextFunction) 
 
     // if the token does not exist, then the user is not authenticated
     if (!token) {
-        console.log("Token not found in cookies")
+        console.log("ERROR - VALIDATE COOKIE --> No token found")
         return res.status(401).json({errorMessage: "Unauthorized"});
     }
 
     try {
+
+        console.log("Token found --> " + token)
+
 
 
         // verify the token -- This is vital because the token could be tampered with or expired
@@ -37,7 +40,6 @@ export const validateCookie = (req: Request, res: Response, next: NextFunction) 
         // get the userId from the decoded token (this is possible because we added the userId to the token when we generated it 😊)
         // If the token is valid, the user ID is extracted from the token and attached to the request object.
         req.userId = (decoded as any).userId;
-
 
 
         next();
