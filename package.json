@@ -5,7 +5,8 @@
   "main": "./src/server.ts",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "e2e": "cross-env DOTENV_CONFIG_PATH=.env.e2e nodemon src/server.ts"
+    "build": "npm i && npx tsc",
+    "start": "node dist/server.js"
   },
   "author": "Chamika Jayasinghe",
   "license": "ISC",
