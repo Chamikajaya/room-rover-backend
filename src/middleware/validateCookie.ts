@@ -20,8 +20,11 @@ export const validateCookie = (req: Request, res: Response, next: NextFunction) 
     // check if the token exists
     const token = req.cookies.token;
 
+    console.log("Token --> " + token)
+
     // if the token does not exist, then the user is not authenticated
     if (!token) {
+        console.log("Token not found in cookies")
         return res.status(401).json({errorMessage: "Unauthorized"});
     }
 
