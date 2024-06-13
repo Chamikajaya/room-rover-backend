@@ -11,6 +11,9 @@ import hotelsRouter from "./routes/hotelsRouter";
 import chatbotRouter from "./routes/chatbotRouter";
 import bookingsRouter from "./routes/bookingsRouter";
 
+
+
+
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,

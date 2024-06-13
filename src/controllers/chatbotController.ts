@@ -4,41 +4,41 @@ import ChatCompletionMessage = OpenAI.ChatCompletionMessage;
 import openAI, {getEmbedding} from "../utils/botRelatedUtils/openai";
 import {hotelIndex} from "../utils/botRelatedUtils/pinecone";
 import {PrismaClient} from "@prisma/client";
-import {OpenAIStream, StreamingTextResponse} from "ai";  // ! GOT DEPRECATED WARNING
+import {OpenAIStream, StreamingTextResponse} from "ai";
 
 const prisma = new PrismaClient();
 
-
 export const sendMessage = async (req: Request, res: Response) => {
-    console.log("Route hit --> POST /api/v1/chat")
+    console.log("Route hit --> POST /api/v1/chat");
 
     try {
-        // extract the messages from the request body
+        // Extract the messages from the request body
         const messages: ChatCompletionMessage[] = req.body.messages;
+        console.log("The messages are as follows .. \n " + JSON.stringify(messages));
 
-        const truncatedMessages = messages.slice(-8); // get the last 8 messages
+        const truncatedMessages = messages.slice(-8); // Get the last 8 messages
 
-        // iterate the messages array and get a final big string of text to be sent to generate embeddings  ==>
-        const stringOfTextFromConversation = truncatedMessages.map((message) => message.content).join("\n")
+        // Combine messages into a single string
+        const stringOfTextFromConversation = truncatedMessages.map((message) => message.content).join("\n");
 
-        // get the embeddings for the messages truncated ->
+        // Get embeddings for the conversation
         const embeddings = await getEmbedding(stringOfTextFromConversation);
 
-        // get embeddings from Pinecone, which are similar to the embeddings corresponding to the conversation we had, in fact this will return an obj similar to the following , refer ==> https://docs.pinecone.io/reference/api/data-plane/query
+        // Query Pinecone for similar embeddings
         const similarEmbeddingsFromPineconeDb = await hotelIndex.query({
-            vector: embeddings,  // pass the embeddings we got from the conversation
-            topK: 10,  // how many similar results to send, higher the better, however since we will be sending more data to LLM model, hence cost is also high
-        })
+            vector: embeddings,
+            topK: 10,
+        });
 
-        // now get the corresponding notes for those embeddings returned by Pinecone
+        // Fetch related hotels from the database
         const relatedHotels = await prisma.hotel.findMany({
             where: {
-                id: {in: similarEmbeddingsFromPineconeDb.matches.map((match) => match.id)}  // coz hotels in Mongodb and embeddings in Pinecone has the same id 😊
+                id: {in: similarEmbeddingsFromPineconeDb.matches.map((match) => match.id)}
             }
-        })
+        });
+        console.log("The related hotels are as follows .. \n " + JSON.stringify(relatedHotels));
 
-        console.log("The related notes to the ongoing chat are as follows .. \n " + relatedHotels)
-
+        // Construct the system message for LLM
         const systemMessage: ChatCompletionMessage = {
             role: "assistant",
             content: `
@@ -71,23 +71,32 @@ URL: http://localhost:3000/hotel-details/${hotel.id}
             `.trim()
         };
 
-        // making request to LLM
+        // Request LLM response with streaming
+        // const llmResponse = await openAI.chat.completions.create({
+        //     model: "gpt-3.5-turbo",
+        //     stream: true,
+        //     messages: [systemMessage, ...truncatedMessages]
+        // });
+
         const llmResponse = await openAI.chat.completions.create({
-            model:"gpt-3.5-turbo",
-            stream:true,
-            messages:[systemMessage, ...truncatedMessages]
-        })
+            model: "gpt-3.5-turbo",
+            stream: true,
+            messages: [systemMessage, ...truncatedMessages, {role: "user", content: "What are the best hotels in Sri Lanka"}]
+        });
 
-        // return the response -> https://sdk.vercel.ai/docs/api-reference/providers/openai-stream
+
+        console.log("LLM Response:", llmResponse);
+
+        // Create a readable stream
         const stream = OpenAIStream(llmResponse);
-        return new StreamingTextResponse(stream)
 
+        console.log("Stream:", stream);
 
-
+        // Return the streaming response
+        return new StreamingTextResponse(stream);
 
     } catch (e) {
         console.log("ERROR - SEND MESSAGE @POST --> " + e);
         res.status(500).json({errorMessage: "Internal Server Error"});
     }
-
 };

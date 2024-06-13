@@ -3,6 +3,6 @@ import {sendMessage} from "../controllers/chatbotController";
 
 const chatbotRouter = Router();
 
-chatbotRouter.post("/chat", sendMessage);
+chatbotRouter.post("/", sendMessage);
 
 export default chatbotRouter;

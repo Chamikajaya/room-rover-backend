@@ -11,11 +11,12 @@
   "author": "Chamika Jayasinghe",
   "license": "ISC",
   "dependencies": {
+    "@ai-sdk/openai": "^0.0.24",
     "@pinecone-database/pinecone": "^2.2.2",
     "@prisma/client": "^5.14.0",
     "@types/nodemailer": "^6.4.15",
     "@types/uuid": "^9.0.8",
-    "ai": "^3.1.26",
+    "ai": "^3.0.19",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.2.0",
     "cookie-parser": "^1.4.6",
@@ -27,7 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.13",
-    "openai": "^4.48.1",
+    "openai": "^4.33.0",
     "stripe": "^15.9.0",
     "uuid": "^9.0.1"
   },

@@ -1,6 +1,9 @@
 import OpenAI from "openai";
 
-const apiKey = process.env.OPENAI_API_KEY;
+
+const apiKey = "process.env.OPENAI_API_KEY";  // TODO:
+console.log("API key is " + apiKey);
+
 
 if (!apiKey)
     throw new Error("No OpenAI API key found in environment variables");
@@ -18,7 +21,7 @@ export async function getEmbedding(text: string) {
     });
 
     if (!response) throw new Error("No response from OpenAI API");
-
-    console.log(response.data[0].embedding);
+    // console.log("The embeddings are as follows ..  ")
+    // console.log(response.data[0].embedding);
     return response.data[0].embedding; // returns an array of embeddings
 }
