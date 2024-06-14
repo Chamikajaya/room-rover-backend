@@ -4,8 +4,6 @@ import {Request, Response} from "express";
 import {uploadImages} from "../utils/uploadImagesToCloudinary";
 import {hotelCreationValidationRules} from "../validations/hotelValidation";
 import {handleValidationErrors} from "../middleware/validate";
-import {createEmbeddingForHotel} from "../utils/botRelatedUtils/createEmbeddingForHotel";
-import {hotelIndex} from "../utils/botRelatedUtils/pinecone";
 
 const prisma = new PrismaClient();
 
@@ -105,27 +103,10 @@ export const createHotel = [
             hotel.numAdults = Number(hotel.numAdults);
             hotel.numChildren = Number(hotel.numChildren);
 
-            // creating the embedding for the hotel
-            const hotelEmbedding = await createEmbeddingForHotel(hotel.id, hotel.name, hotel.description);
 
-            // storing the hotel in MongoDb and embedding in Pinecone in a transaction
-            const createdHotel = await prisma.$transaction(async (tx) => {
-                // creating the hotel in MongoDb
-                const createdHotel = await tx.hotel.create({
-                    data: hotel,
-                });
-                // storing the embedding in Pinecone
-                await hotelIndex.upsert([
-                    {
-                        id: createdHotel.id.toString(),
-                        values: hotelEmbedding,
-                        // metadata: {userId: createdHotel.userId},
-                    },
-
-                ]);
-                return createdHotel;
-
-            })
+            const createdHotel = await prisma.hotel.create({
+                data: hotel,
+            });
 
             res.status(201).json(createdHotel);
         } catch (e) {
@@ -150,32 +131,16 @@ export const updateHotel = async (req: Request, res: Response) => {
         hotelData.numAdults = parseInt(hotelData.numAdults);
         hotelData.numChildren = parseInt(hotelData.numChildren);
 
-        // creating the embedding for the hotel
-        const hotelEmbedding = await createEmbeddingForHotel(hotelData.id, hotelData.name, hotelData.description);
 
-        const updatedHotelFromDb = await prisma.$transaction(async (tx) => {
-            // Update hotel data
-            const updatedHotelFromDb = await tx.hotel.update({
-                where: {
-                    id,
-                    userId,
-                },
-                data: {
-                    ...hotelData,
-                    updatedAt: new Date(),
-                },
-            });
-
-            // Update the embedding in Pinecone
-            await hotelIndex.upsert([
-                {
-                    id: updatedHotelFromDb.id.toString(),
-                    values: hotelEmbedding,
-                    // metadata: {userId: updatedHotelFromDb.userId},
-                },
-            ]);
-
-            return updatedHotelFromDb;
+        const updatedHotelFromDb = await prisma.hotel.update({
+            where: {
+                id,
+                userId,
+            },
+            data: {
+                ...hotelData,
+                updatedAt: new Date(),
+            },
         });
 
 
@@ -222,7 +187,6 @@ export const deleteHotel = async (req: Request, res: Response) => {
         const userId = req.userId as string;
 
 
-
         // Verify that the hotel belongs to the user
         const hotel = await prisma.hotel.findUnique({
             where: {
@@ -237,16 +201,11 @@ export const deleteHotel = async (req: Request, res: Response) => {
         }
 
 
-        await prisma.$transaction(async (tx) => {
-            // Delete the hotel
-            await prisma.hotel.delete({
-                where: {
-                    id,
-                },
-            });
-
-            await hotelIndex.deleteOne(id.toString());
-
+        // Delete the hotel
+        await prisma.hotel.delete({
+            where: {
+                id,
+            },
         });
 
 
