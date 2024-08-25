@@ -24,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 // server is going to accept request from client url -->
+console.log("Client URL is set to : ", process.env.CLIENT_URL);
 app.use(
     cors({
         origin: process.env.CLIENT_URL,
