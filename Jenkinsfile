@@ -23,6 +23,13 @@ pipeline {
             steps {
                 script {
                     echo "Pipeline initiated by ${params.NAME}"
+
+                    sh 'node --version'
+                    sh 'npm --version'
+                    if (!fileExists('package.json')) {
+                        error "package.json not found"
+                        }
+                    echo "package.json contents: ${readFile('package.json')}"
                     gv = load "script.groovy"
                 }
             }
@@ -56,13 +63,13 @@ pipeline {
                 }
             }
         }
-//         stage("Deploy") {
-//             steps {
-//                 script {
-//                     gv.deploy()
-//                 }
-//             }
-//         }
+        stage("Deploy") {
+            steps {
+                script {
+                    gv.deploy()
+                }
+            }
+        }
         stage("Commit version update to Git") {
             steps {
                 script {
