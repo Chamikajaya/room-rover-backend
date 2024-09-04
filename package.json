@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "backend of project Room Rover",
   "main": "./src/server.ts",
   "scripts": {
