@@ -30,7 +30,7 @@ def deploy() {
     def dockerCommand = "docker run -d -p 5000:5000 chamikajay/room-rover-backend:${env.IMAGE_TAG}"
 
     sshagent(['aws-ec2-ssh']) {
-        sh "ssh -o StrictHostKeyChecking=no ec2-user@13.200.12.74 ${dockerCommand}"
+        sh "ssh -o StrictHostKeyChecking=no ec2-user@15.207.103.44 ${dockerCommand}"
     }
 }
 

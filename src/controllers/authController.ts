@@ -25,7 +25,7 @@ const setCookie = (res: Response, token: string) => {
     res.cookie("token", token, {
         httpOnly: true,  // the cookie cannot be accessed by JavaScript
 
-        secure: false,  // set to true in production
+        secure: false,  // set to true in production - HTTPS
         maxAge: 1000 * 60 * 60 * 24,  // 1 day in ms -> After this time, the cookie will expire, and the user will need to authenticate again.
         // sameSite: "none"  // the cookie is sent in cross-origin requests
     });
