@@ -31,13 +31,13 @@ app.use(
     })
 );
 
-// transporter.verify((err, success) => {
-//     if (err) {
-//         console.log(err);
-//     } else {
-//         console.log("Server is ready to take messages");
-//     }
-// });
+transporter.verify((err, success) => {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log("Server is ready to take messages");
+    }
+});
 
 app.get("/health", async (req, res) => {
     res.send("Health is ok. Server is running");

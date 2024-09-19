@@ -1,4 +1,11 @@
-import { PredictionServiceClient, protos } from '@google-cloud/aiplatform';
+import {PredictionServiceClient, protos} from '@google-cloud/aiplatform';
+import {VertexAI} from "@google-cloud/vertexai";
+
+const vertexAI = new VertexAI({project: process.env.GOOGLE_CLOUD_PROJECT, location: process.env.GOOGLE_CLOUD_LOCATION});
+
+export const myLLM = vertexAI.getGenerativeModel({
+    model: "gemini-1.5-pro"
+})
 
 // Function to generate embeddings
 export const generateEmbedding = async (text: string): Promise<number[]> => {
@@ -11,21 +18,21 @@ export const generateEmbedding = async (text: string): Promise<number[]> => {
         const location = 'us-central1';
         const endpoint = `projects/${project}/locations/${location}/publishers/google/models/${model}`;
 
-        const clientOptions = { apiEndpoint: apiEndpoint };
+        const clientOptions = {apiEndpoint: apiEndpoint};
         const client = new PredictionServiceClient(clientOptions);
 
         const instances: protos.google.protobuf.IValue[] = text.split(";").map(sentence => ({
             structValue: {
                 fields: {
-                    content: { stringValue: sentence },
-                    task_type: { stringValue: task }
+                    content: {stringValue: sentence},
+                    task_type: {stringValue: task}
                 }
             }
         }));
 
         const parameters: protos.google.protobuf.IValue = {
             structValue: {
-                fields: dimensionality > 0 ? { outputDimensionality: { numberValue: dimensionality } } : {}
+                fields: dimensionality > 0 ? {outputDimensionality: {numberValue: dimensionality}} : {}
             }
         };
 

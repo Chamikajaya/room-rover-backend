@@ -4,6 +4,10 @@ import {Request, Response} from "express";
 import {uploadImages} from "../utils/uploadImagesToCloudinary";
 import {hotelCreationValidationRules} from "../validations/hotelValidation";
 import {handleValidationErrors} from "../middleware/validate";
+import {generateEmbedding} from "../utils/vertex-ai";
+import {hotelIndex} from "../utils/pinecone-client";
+import {generateEmbeddingForHotel} from "../utils/generateEmbeddingForHotel";
+
 
 const prisma = new PrismaClient();
 
@@ -83,7 +87,7 @@ export const createHotel = [
             // Get the uploaded images from the request
             const imageFiles = req.files as Express.Multer.File[];
 
-            const hotel: Hotel = req.body;
+            let hotel: Hotel = req.body;
 
             // Uploading the images to cloudinary
             // if the image upload succeeds, the image URLs are stored in the imageURLs field of the hotel object. ->
@@ -99,14 +103,48 @@ export const createHotel = [
 
             hotel.starRating = Number(hotel.starRating);
 
-
             hotel.numAdults = Number(hotel.numAdults);
             hotel.numChildren = Number(hotel.numChildren);
 
+            const hotelEmbedding = await generateEmbeddingForHotel(
+                hotel.name,
+                hotel.pricePerNight,
+                hotel.starRating,
+                hotel.numAdults,
+                hotel.numChildren,
+                hotel.type,
+                hotel.country,
+                hotel.city,
+                hotel.facilities,
+                hotel.description,
+            );
 
-            const createdHotel = await prisma.hotel.create({
-                data: hotel,
-            });
+            /*
+        Transaction ==>  Transaction is a way to group multiple operations into a single unit of work. If any operation fails, the whole transaction fails. We want the hotel to create on mongodb only if the embedding is created successfully. If the embedding creation fails, we don't want to create the note. Vice versa, if the embedding creation fails, we don't want to create the hotel either.
+
+         */
+
+            const createdHotel = await prisma.$transaction(async (prisma) => {
+                // 1) Create the hotel in mongodb
+                const createdHotel = await prisma.hotel.create({
+                    data: hotel,
+                });
+
+                // 2) Create the embedding in pinecone
+                await hotelIndex.upsert([
+                    {
+                        id: createdHotel.id.toString(),
+                        values: hotelEmbedding,
+                        metadata: {userId: createdHotel.userId}
+                    }
+                ]);
+
+                return createdHotel;
+            },
+            {
+                timeout: 10000
+            }
+            );
 
             res.status(201).json(createdHotel);
         } catch (e) {
@@ -132,15 +170,43 @@ export const updateHotel = async (req: Request, res: Response) => {
         hotelData.numChildren = parseInt(hotelData.numChildren);
 
 
-        const updatedHotelFromDb = await prisma.hotel.update({
-            where: {
-                id,
-                userId,
-            },
-            data: {
-                ...hotelData,
-                updatedAt: new Date(),
-            },
+        const hotelEmbedding = await generateEmbeddingForHotel(
+            hotelData.name,
+            hotelData.pricePerNight,
+            hotelData.starRating,
+            hotelData.numAdults,
+            hotelData.numChildren,
+            hotelData.type,
+            hotelData.country,
+            hotelData.city,
+            hotelData.facilities,
+            hotelData.description,
+        );
+
+        const updatedHotelFromDb = await prisma.$transaction(async (prisma) => {
+
+            // 1) Update the hotel in mongodb
+            const updatedHotel = await prisma.hotel.update({
+                where: {
+                    id,
+                    userId,
+                },
+                data: {
+                    ...hotelData,
+                    updatedAt: new Date(),
+                },
+            });
+
+            // 2) Update the embedding in pinecone
+            await hotelIndex.upsert([
+                {
+                    id: updatedHotel.id.toString(),
+                    values: hotelEmbedding,
+                    metadata: {userId: updatedHotel.userId}
+                }
+            ]);
+
+            return updatedHotel;
         });
 
 
@@ -154,6 +220,10 @@ export const updateHotel = async (req: Request, res: Response) => {
         const updatedUrls = await uploadImages(imageFiles);
         const alreadyUploadedUrls = updatedHotelFromDb.imageURLs || [];
         const mergedImageUrls = [...alreadyUploadedUrls, ...updatedUrls];
+
+
+
+
 
         // Update imageURLs in the database
         const updatedHotel = await prisma.hotel.update({
