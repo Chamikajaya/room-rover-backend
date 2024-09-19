@@ -12,6 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "@ai-sdk/openai": "^0.0.24",
+    "@google-cloud/aiplatform": "^3.29.0",
+    "@google-cloud/vertexai": "^1.7.0",
     "@pinecone-database/pinecone": "^2.2.2",
     "@prisma/client": "^5.14.0",
     "@types/nodemailer": "^6.4.15",
