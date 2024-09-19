@@ -4,7 +4,6 @@ import {Request, Response} from "express";
 import {uploadImages} from "../utils/uploadImagesToCloudinary";
 import {hotelCreationValidationRules} from "../validations/hotelValidation";
 import {handleValidationErrors} from "../middleware/validate";
-import {generateEmbedding} from "../utils/vertex-ai";
 import {hotelIndex} from "../utils/pinecone-client";
 import {generateEmbeddingForHotel} from "../utils/generateEmbeddingForHotel";
 
@@ -125,25 +124,25 @@ export const createHotel = [
          */
 
             const createdHotel = await prisma.$transaction(async (prisma) => {
-                // 1) Create the hotel in mongodb
-                const createdHotel = await prisma.hotel.create({
-                    data: hotel,
-                });
+                    // 1) Create the hotel in mongodb
+                    const createdHotel = await prisma.hotel.create({
+                        data: hotel,
+                    });
 
-                // 2) Create the embedding in pinecone
-                await hotelIndex.upsert([
-                    {
-                        id: createdHotel.id.toString(),
-                        values: hotelEmbedding,
-                        metadata: {userId: createdHotel.userId}
-                    }
-                ]);
+                    // 2) Create the embedding in pinecone
+                    await hotelIndex.upsert([
+                        {
+                            id: createdHotel.id.toString(),
+                            values: hotelEmbedding,
+                            metadata: {userId: createdHotel.userId}
+                        }
+                    ]);
 
-                return createdHotel;
-            },
-            {
-                timeout: 10000
-            }
+                    return createdHotel;
+                },
+                {
+                    timeout: 10000
+                }
             );
 
             res.status(201).json(createdHotel);
@@ -185,29 +184,33 @@ export const updateHotel = async (req: Request, res: Response) => {
 
         const updatedHotelFromDb = await prisma.$transaction(async (prisma) => {
 
-            // 1) Update the hotel in mongodb
-            const updatedHotel = await prisma.hotel.update({
-                where: {
-                    id,
-                    userId,
-                },
-                data: {
-                    ...hotelData,
-                    updatedAt: new Date(),
-                },
-            });
+                // 1) Update the hotel in mongodb
+                const updatedHotel = await prisma.hotel.update({
+                    where: {
+                        id,
+                        userId,
+                    },
+                    data: {
+                        ...hotelData,
+                        updatedAt: new Date(),
+                    },
+                });
 
-            // 2) Update the embedding in pinecone
-            await hotelIndex.upsert([
-                {
-                    id: updatedHotel.id.toString(),
-                    values: hotelEmbedding,
-                    metadata: {userId: updatedHotel.userId}
-                }
-            ]);
+                // 2) Update the embedding in pinecone
+                await hotelIndex.upsert([
+                    {
+                        id: updatedHotel.id.toString(),
+                        values: hotelEmbedding,
+                        metadata: {userId: updatedHotel.userId}
+                    }
+                ]);
 
-            return updatedHotel;
-        });
+                return updatedHotel;
+            },
+            {
+                timeout: 10000
+            }
+        );
 
 
         if (!updatedHotelFromDb) {
@@ -220,9 +223,6 @@ export const updateHotel = async (req: Request, res: Response) => {
         const updatedUrls = await uploadImages(imageFiles);
         const alreadyUploadedUrls = updatedHotelFromDb.imageURLs || [];
         const mergedImageUrls = [...alreadyUploadedUrls, ...updatedUrls];
-
-
-
 
 
         // Update imageURLs in the database
@@ -270,12 +270,16 @@ export const deleteHotel = async (req: Request, res: Response) => {
             return;
         }
 
+        await prisma.$transaction(async (prisma) => {
+            // 1) Delete the hotel from mongodb
+            await prisma.hotel.delete({
+                where: {
+                    id,
+                },
+            });
 
-        // Delete the hotel
-        await prisma.hotel.delete({
-            where: {
-                id,
-            },
+            // 2) Delete the embedding from pinecone
+            await hotelIndex.deleteOne(id.toString());
         });
 
 

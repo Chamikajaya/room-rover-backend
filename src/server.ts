@@ -9,6 +9,7 @@ import {transporter} from "./utils/emailRelatedUtils/sendVerificationEmail";
 import hotelsRouter from "./routes/hotelsRouter";
 import bookingsRouter from "./routes/bookingsRouter";
 import {generateEmbedding} from "./utils/vertex-ai";
+import chatRouter from "./routes/chatRouter";
 
 
 cloudinary.config({
@@ -48,22 +49,7 @@ app.use("/api/v1/my-hotels", myHotelsRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/my-bookings", bookingsRouter);
 
-// Embedding endpoint using the new function
-app.post("/api/v1/generate-embeddings", async (req, res) => {
-    try {
-        const {texts} = req.body;
-
-        if (!texts || typeof texts !== "string") {
-            return res.status(400).json({error: "Invalid input. 'texts' should be a string."});
-        }
-
-        const embeddings = await generateEmbedding(texts);
-        res.json({embeddings});
-    } catch (error) {
-        console.error("Error generating embeddings:", error);
-        res.status(500).json({error: "Failed to generate embeddings"});
-    }
-});
+app.use("/api/chat", chatRouter);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
