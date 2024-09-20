@@ -1,9 +1,40 @@
 # Project Room Rover - Backend 🚀
 
+## Overview
+
+Room Rover is an advanced hotel booking application created by me, that leverages cutting-edge AI technology to provide personalized hotel recommendations and an intuitive booking experience. This repository contains the backend code for Room Rover, showcasing a robust architecture and modern development practices.
+
 ## Live Demo
 
 
 https://github.com/Chamikajaya/room-rover-backend/assets/109778419/a83dd483-28b7-4246-ad64-4232fd4bade0
+
+## Key Features
+
+- AI-powered hotel recommendations
+- Real-time chatbot assistance using RAG (Retrieval-Augmented Generation)
+- Secure user authentication and authorization
+- Efficient hotel search and booking system
+- Continuous deployment pipeline for rapid and reliable updates
+
+## RAG-powered Chatbot
+
+Roomie the chatbot utilizes the RAG (Retrieval-Augmented Generation) architecture to provide context-aware, accurate responses to user queries.
+
+![rag-pipeline.drawio.png](architecture-diagrams%2Frag-pipeline.drawio.png)
+
+## Continuous Deployment Pipeline
+
+I  employed a robust continuous deployment pipeline to ensure rapid, reliable updates to  production environment.
+
+![devops-pipeline.drawio.png](architecture-diagrams%2Fdevops-pipeline.drawio.png)
+
+CD pipeline includes:
+1. Automated versioning
+2. Dependency installation and build process
+3. Docker image creation and pushing to Docker Hub
+4. Deployment to AWS EC2
+5. Automated Git repository updates
 
 
 
@@ -12,13 +43,19 @@ https://github.com/Chamikajaya/room-rover-backend/assets/109778419/a83dd483-28b7
 - Frontend Source Code: [https://github.com/Chamikajaya/room-rover-frontend](https://github.com/Chamikajaya/room-rover-frontend)
 - Backend Source Code: [https://github.com/Chamikajaya/room-rover-backend](https://github.com/Chamikajaya/room-rover-backend)
 
-## Technologies Used 🛠️
+
+
+
+## Technology Stack
 
 - **Backend:** Node.js, Express.js
-- **Database:** MongoDB
-- **ORM:** Prisma
-- **Frontend:** Next.js (React Framework), Tailwind CSS, ShadCN UI Library
-- **Authentication:** JSON Web Tokens (JWT)
+- **Database:** MongoDB with Prisma ORM
+- **AI and Machine Learning:** Vertex AI (for embeddings - text-embedding-004  and for  language model - gemini pro 1.5)  
+- **Vector Database:** Pinecone
+- **Containerization:** Docker
+- **CI/CD:** Jenkins
+- **Cloud Services:** AWS EC2
+- **Version Control:** Git, GitHub
 
 ## Environment Variables - Backend 🔧
 

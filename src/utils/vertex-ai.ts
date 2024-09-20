@@ -11,7 +11,7 @@ export const myLLM = vertexAI.getGenerativeModel({
 export const generateEmbedding = async (text: string): Promise<number[]> => {
     try {
         const project = process.env.GOOGLE_CLOUD_PROJECT;
-        const model = 'text-embedding-004';
+        const model = 'text-embedding-004';  // * Embedding model used for generating embeddings
         const task = "QUESTION_ANSWERING";
         const dimensionality = 0;
         const apiEndpoint = 'us-central1-aiplatform.googleapis.com';
